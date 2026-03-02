@@ -104,14 +104,59 @@ public class Prev26Lexer extends Lexer {
 	}
 
 
+
 	    @Override
 		public LexAn.LocLogToken nextToken() {
 			return (LexAn.LocLogToken) super.nextToken();
 		}
 
+		// private void lexError(String msg) {
+	    //     throw new Report.Error(new Location(getLine(), getCharPositionInLine()), msg);
+	    // }
+
 		private void lexError(String msg) {
-	        throw new Report.Error(new Location(getLine(), getCharPositionInLine()), msg);
+	        int abs = this._tokenStartCharIndex;
+	        int line = getLine();
+	        int col  = visualColumn(abs);
+
+	        throw new Report.Error(new Location(line, col+1), msg);
 	    }
+
+		private int visualColumn(int absIndex) {
+			// find line start (scan backwards for '\n')
+			int lineStart = absIndex - 1;
+			while (lineStart >= 0) {
+				String ch = _input.getText(org.antlr.v4.runtime.misc.Interval.of(lineStart, lineStart));
+				if ("\n".equals(ch)) break;
+				lineStart--;
+			}
+			lineStart++;
+
+			if (absIndex <= lineStart) return 0;
+
+			// prefix of the line up to the error position
+			String prefix = _input.getText(org.antlr.v4.runtime.misc.Interval.of(lineStart, absIndex - 1));
+
+			// expand tabs to width 8 and return resulting length
+			return expandTabs(prefix, 8).length();
+		}
+
+		private String expandTabs(String s, int tabWidth) {
+			StringBuilder out = new StringBuilder(s.length());
+			int col = 0;
+			for (int i = 0; i < s.length(); i++) {
+				char c = s.charAt(i);
+				if (c == '\t') {
+					int add = tabWidth - (col % tabWidth);
+					for (int k = 0; k < add; k++) out.append(' ');
+					col += add;
+				} else {
+					out.append(c);
+					col++;
+				}
+			}
+			return out.toString();
+		}
 
 
 	public Prev26Lexer(CharStream input) {
