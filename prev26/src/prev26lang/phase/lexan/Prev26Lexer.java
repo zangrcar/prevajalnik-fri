@@ -123,7 +123,6 @@ public class Prev26Lexer extends Lexer {
 	    }
 
 		private int visualColumn(int absIndex) {
-			// find line start (scan backwards for '\n')
 			int lineStart = absIndex - 1;
 			while (lineStart >= 0) {
 				String ch = _input.getText(org.antlr.v4.runtime.misc.Interval.of(lineStart, lineStart));
@@ -134,28 +133,25 @@ public class Prev26Lexer extends Lexer {
 
 			if (absIndex <= lineStart) return 0;
 
-			// prefix of the line up to the error position
 			String prefix = _input.getText(org.antlr.v4.runtime.misc.Interval.of(lineStart, absIndex - 1));
 
-			// expand tabs to width 8 and return resulting length
-			return expandTabs(prefix, 8).length();
+			return expandTabs(prefix, 8);
 		}
 
-		private String expandTabs(String s, int tabWidth) {
-			StringBuilder out = new StringBuilder(s.length());
+		private int expandTabs(String s, int tabWidth) {
 			int col = 0;
+
 			for (int i = 0; i < s.length(); i++) {
 				char c = s.charAt(i);
+
 				if (c == '\t') {
-					int add = tabWidth - (col % tabWidth);
-					for (int k = 0; k < add; k++) out.append(' ');
-					col += add;
+					col += tabWidth - (col % tabWidth);
 				} else {
-					out.append(c);
 					col++;
 				}
 			}
-			return out.toString();
+
+			return col;
 		}
 
 
