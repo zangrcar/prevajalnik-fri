@@ -11,7 +11,12 @@ lexer grammar Prev26Lexer;
 	public LexAn.LocLogToken nextToken() {
 		return (LexAn.LocLogToken) super.nextToken();
 	}
+
+	private void lexError(String msg) {
+        throw new Report.Error(new Location(getLine(), getCharPositionInLine()), msg);
+    }
 }
+
 
 AND : 'and';
 AS : 'as';
@@ -59,10 +64,22 @@ IS : '=';
 DD : ':';
 C : ',';
 D : '.';
-COMMENT : '//' [^\n]* -> skip;
+COMMENT : '//' [\u0000-\u0009\u000B-\u000C\u000E-\u007F]* ('\n' | EOF) -> skip;
 WS : [ \n\r\t]+ -> skip;
 NAME : [A-Za-z_][A-Za-z_0-9]*;
-// CINT : [+-]?[1-9][0-9]*;
 CINT : [1-9][0-9]* | '0';
-CCHAR : '\'' ( '\\\\' | '\\\'' | '\\x'([0-9A-F][0-9A-F]) | [ -&(-[\]-~] ) '\'';
-CSTRING : '"' ( '\\\\' | '\\"' | '\\x'([0-9A-F][0-9A-F]) | [ -!#-[\]-~] )* '"';
+CCHAR : '\'' ( BACKSLASH | QUOTE | HEXCHAR | NOQUOTE) '\'';
+CSTRING : '"' ( BACKSLASH | DQUOTE | HEXCHAR | NODQUOTE )* '"';
+fragment BACKSLASH : '\\\\';
+fragment QUOTE : '\\\'';
+fragment DQUOTE : '\\"';
+fragment HEXCHAR : '\\x'([0-9A-F][0-9A-F]);
+fragment NOQUOTE : [ -&(-[\]-~];
+fragment NODQUOTE : [ -!#-[\]-~];
+
+ANY : 
+	.
+	{
+		lexError("Invalid character " + getText());
+	}
+;

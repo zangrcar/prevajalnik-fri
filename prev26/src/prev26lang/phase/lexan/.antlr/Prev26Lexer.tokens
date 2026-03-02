@@ -50,6 +50,7 @@ NAME=49
 CINT=50
 CCHAR=51
 CSTRING=52
+ANY=53
 'and'=1
 'as'=2
 'bool'=3
