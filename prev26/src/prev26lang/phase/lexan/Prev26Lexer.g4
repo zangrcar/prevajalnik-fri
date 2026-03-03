@@ -56,6 +56,20 @@ lexer grammar Prev26Lexer;
 
 		return col;
 	}
+
+	private void lexErrorUnterminated(String msg) {
+		int absEnd = _input.index();
+
+		String t = getText();
+		if (t.endsWith("\r\n")) absEnd -= 2;
+		else if (t.endsWith("\n")) absEnd -= 1;
+
+		int line = _tokenStartLine;
+
+		int col = visualColumn(absEnd);
+
+		throw new Report.Error(new Location(line, col + 1), msg);
+	}
 }
 
 
@@ -110,7 +124,15 @@ WS : [ \n\r\t]+ -> skip;
 NAME : [A-Za-z_][A-Za-z_0-9]*;
 CINT : [1-9][0-9]* | '0';
 CCHAR : '\'' ( BACKSLASH | QUOTE | HEXCHAR | NOQUOTE) '\'';
+INVALID_CHAR: '\'' ( BACKSLASH | QUOTE | HEXCHAR | NOQUOTE) ('\n' | EOF)
+	{
+		lexErrorUnterminated("missing closing apostrophe");
+	};
 CSTRING : '"' ( BACKSLASH | DQUOTE | HEXCHAR | NODQUOTE )* '"';
+INVALID_STRING : '"' ( BACKSLASH | DQUOTE | HEXCHAR | NODQUOTE )* ('\n' | EOF)
+	{
+		lexErrorUnterminated("missing closing dictate");
+	};
 fragment BACKSLASH : '\\\\';
 fragment QUOTE : '\\\'';
 fragment DQUOTE : '\\"';
@@ -121,6 +143,6 @@ fragment NODQUOTE : [ -!#-[\]-~];
 ANY : 
 	.
 	{
-		lexError("Invalid character " + getText());
+		lexError("Unexpected character " + getText());
 	}
 ;

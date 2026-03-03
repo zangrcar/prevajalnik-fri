@@ -1,4 +1,4 @@
-// Generated from /home/grcar/prevajalnik-fri/prev26/src/prev26lang/phase/lexan/Prev26Lexer.g4 by ANTLR 4.13.1
+// Generated from Prev26Lexer.g4 by ANTLR 4.13.2
 
 	package prev26lang.phase.lexan;
 
@@ -13,9 +13,9 @@ import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.*;
 
-@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
+@SuppressWarnings({"doclint:missing", "all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class Prev26Lexer extends Lexer {
-	static { RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
