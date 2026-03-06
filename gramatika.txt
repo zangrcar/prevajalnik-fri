@@ -5,7 +5,7 @@ prog_tail -> d prog_tail | .
 d -> 
     "typ" id "=" t | 
     "var" id ":" t | 
-    "fun" id "(" params ")" ":" fun_tail .
+    "fun" id "(" params ")" ":" t fun_tail .
 fun_tail -> "=" expr_list | .
 params -> param param_tail | .
 param_tail -> "," param param_tail | .
@@ -34,7 +34,7 @@ nonid_t ->
 
 
 basic_t -> "int" | "char" | "bool" | "void" .
-array_t -> "[" "int" "]" t .
+array_t -> "[" int "]" t .
 pointer_t -> "^" t .
 object_t -> "{" params "}" .
 fun_t -> ":" t_list ":" t .
@@ -44,8 +44,10 @@ t_list_tail -> "," t t_list_tail | .
 expr_list -> e e_tail .
 e_tail -> "," e e_tail | .
 
-e -> e_or e_assign .
-e_assign -> "=" e | .
+e -> e_as e_assign .
+e_assign -> "=" e_as | .
+e_as -> e_or as_tail .
+as_tail -> "as" t as_tail | .
 e_or -> e_and or_tail .
 or_tail -> "or" e_and or_tail .
 e_and -> e_comp and_tail .
@@ -63,7 +65,7 @@ e_prefix -> prefix_op e_prefix | e_postfix .
 prefix_op -> "not" | "+" | "-" | "^" .
 e_postfix -> e_basic postfix_tail .
 postfix_tail -> 
-    "." postfix_tail |
+    "." id postfix_tail |
     "^" postfix_tail | 
     "[" e "]" postfix_tail |
     "(" expr_list ")" postfix_tail | .
@@ -85,4 +87,8 @@ e_let -> "let" prog "in" expr_list "end" .
 e_while -> "while" e "do" expr_list "end" .
 e_if -> "if" e "then" expr_list if_tail "end" .
 if_tail -> "else" expr_list | .
+
+
+
+
 
