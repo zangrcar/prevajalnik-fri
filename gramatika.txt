@@ -1,0 +1,88 @@
+s -> prog .
+prog -> d prog_tail .
+prog_tail -> d prog_tail | .
+
+d -> 
+    "typ" id "=" t | 
+    "var" id ":" t | 
+    "fun" id "(" params ")" ":" fun_tail .
+fun_tail -> "=" expr_list | .
+params -> param param_tail | .
+param_tail -> "," param param_tail | .
+param -> id ":" t .
+
+t -> 
+    basic_t | 
+    id | 
+    array_t | 
+    pointer_t |
+    object_t |
+    "(" par_t ")" .
+
+par_t -> par_t_parse_id | fun_t .
+par_t_parse_id -> 
+    id  par_after_id |
+    nonid_t .
+par_after_id -> ":" t param_tail | .
+nonid_t -> 
+    basic_t |
+    array_t |
+    pointer_t |
+    object_t |
+    "(" par_t ")" .
+
+
+
+basic_t -> "int" | "char" | "bool" | "void" .
+array_t -> "[" "int" "]" t .
+pointer_t -> "^" t .
+object_t -> "{" params "}" .
+fun_t -> ":" t_list ":" t .
+t_list -> t t_list_tail | .
+t_list_tail -> "," t t_list_tail | .
+
+expr_list -> e e_tail .
+e_tail -> "," e e_tail | .
+
+e -> e_or e_assign .
+e_assign -> "=" e | .
+e_or -> e_and or_tail .
+or_tail -> "or" e_and or_tail .
+e_and -> e_comp and_tail .
+and_tail -> "and" e_comp and_tail | .
+e_comp -> e_add comp_tail .
+comp_tail -> comp_op e_add | .
+comp_op -> "==" | "!=" | "<" | ">" | "<=" | ">=" .
+e_add -> e_mul add_tail .
+add_tail -> add_comp e_mul add_tail | .
+add_comp -> "+" | "-" .
+e_mul -> e_prefix mul_tail .
+mul_tail -> mul_op e_prefix mul_tail | .
+mul_op -> "*" | "/" | "%" .
+e_prefix -> prefix_op e_prefix | e_postfix .
+prefix_op -> "not" | "+" | "-" | "^" .
+e_postfix -> e_basic postfix_tail .
+postfix_tail -> 
+    "." postfix_tail |
+    "^" postfix_tail | 
+    "[" e "]" postfix_tail |
+    "(" expr_list ")" postfix_tail | .
+
+e_basic -> 
+    id | 
+    e_const | 
+    e_sizeof |
+    e_if | 
+    e_while | 
+    e_let | 
+    "(" expr_list ")" .
+e_const -> int | bool | char | string | void | ptr .
+bool -> "true" | "false" .
+void -> "none" .
+ptr -> "nil" .
+e_sizeof -> "sizeof" t .
+e_let -> "let" prog "in" expr_list "end" .
+e_while -> "while" e "do" expr_list "end" .
+e_if -> "if" e "then" expr_list if_tail "end" .
+if_tail -> "else" expr_list | .
+
