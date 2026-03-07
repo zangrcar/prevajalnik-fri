@@ -1,27 +1,64 @@
-main int test == 3 8038 _cscc83 "cknwnc" jdendjn
-if for test hvala 877656 'c' jap
+typ MyInt = int
+typ A = int
+typ B = char
+typ C = bool
+typ D = void
+typ Arr = [10]int
+typ P = ^int
+typ Obj = {}
+typ Point = {x:int, y:int}
+typ Alias = (SomeName)
+typ Pair = (x:int, y:char)
+typ F0 = (: : int)
+typ F1 = (: int, char, ^bool : void)
 
-        //jcndjnckj  uztrtzui
-	"ifjorf fwfroie
-	'f
-{
-    a	š
-    0000098ckelmclms998
-    78/ 8       7       š
-    _iuztdsdf864u7i
-    charchar
-    iec ecewc
-    ]
-    [
-        (
+var y : int
+var obj : int
+var ptr : ^int
+var arr : [10]int
+var global : ^MyInt
 
-            +*/()=%:,.-^2
-        )
+fun f() : int
+fun add(a:int, b:int) : int = a + b
+fun g(x:int) : int = x
+fun id(x:int) : int = x
 
-        and as bool do char else end false fun if in int let nil none not or sizeof
-then true typ var void while
-    ]
+fun cints() : int = 42
+fun cbool() : bool = true
+fun cchar1() : char = 'a'
+fun cchar2() : char = '\''
+fun cvoid() : void = none
+fun cptr() : int = nil
+fun cstr() : char = "abc"
 
-    // to je nov svedski komentar
-}
-// test
+fun prefix(a:int, b:bool, p:^int) : int = not b, +a, -a, ^p
+fun arith(a:int, b:int, c:int) : int = a * b / c % 2 + a - b
+fun comps(a:int, b:int) : bool = a == b, a != b, a < b, a > b, a <= b, a >= b
+fun logic(a:bool, b:bool, x:int) : int = a and b or a, x as int, x = y
+fun post(a:int) : int = obj.field, ptr^, arr[a], g(a), obj.fld[a]^
+fun paren(a:int, b:int) : int = (a, b, a + b)
+fun sz() : int = sizeof ^[5]{x:int}
+fun iff1(a:bool) : int = if a then 1 end
+fun iff2(a:bool) : int = if a then 1 else 2 end
+fun wh(a:int) : int = while a do a = a - 1 end
+
+fun letf() : int = let
+    typ T = int
+    var x : T
+    fun h(a:T) : T = a
+in
+    h(1)
+end
+
+fun test(a:int, b:bool, p:^int) : int =
+    let
+        typ Local = {z:int}
+        var x : [3]int
+        fun h(t:int) : int = t
+    in
+        if b and true or false then
+            h(a) + sizeof ^int, obj.field[a]^
+        else
+            while a > 0 do a = a - 1 end
+        end
+    end

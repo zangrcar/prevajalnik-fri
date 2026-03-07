@@ -7,6 +7,7 @@ import java.util.*;
 
 import prev26lang.common.report.*;
 import prev26lang.phase.lexan.*;
+import prev26lang.phase.synan.*;
 
 /**
  * The Prev26 compiler.
@@ -30,6 +31,7 @@ public class Compiler {
 	private static final Vector<String> phaseNames = new Vector<String>(Arrays.asList( //
 			"none", // ---: no phase
 			"lexan", // --: lexical analysis
+			"synan", // --: syntax analysis
 			"all" // -----: putting it all together
 	));
 
@@ -192,6 +194,14 @@ public class Compiler {
 						// Unless the lexical analysis is not the last phase to be performed, it is
 						// performed during the syntax analysis.
 					}
+
+					// === SYNTAX ANALYSIS ===
+					try (LexAn lexan = new LexAn(); SynAn synan = new SynAn(lexan)) {
+						SynAn.tree = synan.parser.source();
+						synan.log(SynAn.tree);
+					}
+					if (cmdLineOpts.get("--target-phase").equals("synan"))
+						break;
 
 					break;
 				}

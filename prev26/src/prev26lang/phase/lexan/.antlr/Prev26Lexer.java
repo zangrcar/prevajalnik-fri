@@ -25,7 +25,7 @@ public class Prev26Lexer extends Lexer {
 		INT=11, IN=12, LET=13, NIL=14, NONE=15, NOT=16, OR=17, SIZEOF=18, THEN=19, 
 		TRUE=20, TYP=21, VAR=22, VOID=23, WHILE=24, POWER=25, LB=26, RB=27, LSB=28, 
 		RSB=29, LP=30, RP=31, LE=32, GE=33, NE=34, EQ=35, LT=36, GT=37, MOD=38, 
-		DIV=39, MUL=40, MIN=41, ADD=42, IS=43, DD=44, C=45, D=46, COMMENT=47, 
+		DIV=39, MUL=40, SUB=41, ADD=42, IS=43, DD=44, C=45, D=46, COMMENT=47, 
 		WS=48, NAME=49, CINT=50, CCHAR=51, INVALID_CHAR=52, CSTRING=53, INVALID_STRING=54, 
 		ANY=55;
 	public static String[] channelNames = {
@@ -41,7 +41,7 @@ public class Prev26Lexer extends Lexer {
 			"AND", "AS", "BOOL", "DO", "CHAR", "ELSE", "END", "FALSE", "FUN", "IF", 
 			"INT", "IN", "LET", "NIL", "NONE", "NOT", "OR", "SIZEOF", "THEN", "TRUE", 
 			"TYP", "VAR", "VOID", "WHILE", "POWER", "LB", "RB", "LSB", "RSB", "LP", 
-			"RP", "LE", "GE", "NE", "EQ", "LT", "GT", "MOD", "DIV", "MUL", "MIN", 
+			"RP", "LE", "GE", "NE", "EQ", "LT", "GT", "MOD", "DIV", "MUL", "SUB", 
 			"ADD", "IS", "DD", "C", "D", "COMMENT", "WS", "NAME", "CINT", "CCHAR", 
 			"INVALID_CHAR", "CSTRING", "INVALID_STRING", "BACKSLASH", "QUOTE", "DQUOTE", 
 			"HEXCHAR", "NOQUOTE", "NODQUOTE", "ANY"
@@ -66,7 +66,7 @@ public class Prev26Lexer extends Lexer {
 			"IF", "INT", "IN", "LET", "NIL", "NONE", "NOT", "OR", "SIZEOF", "THEN", 
 			"TRUE", "TYP", "VAR", "VOID", "WHILE", "POWER", "LB", "RB", "LSB", "RSB", 
 			"LP", "RP", "LE", "GE", "NE", "EQ", "LT", "GT", "MOD", "DIV", "MUL", 
-			"MIN", "ADD", "IS", "DD", "C", "D", "COMMENT", "WS", "NAME", "CINT", 
+			"SUB", "ADD", "IS", "DD", "C", "D", "COMMENT", "WS", "NAME", "CINT", 
 			"CCHAR", "INVALID_CHAR", "CSTRING", "INVALID_STRING", "ANY"
 		};
 	}
