@@ -49,7 +49,7 @@ e_assign -> "=" e_as | .
 e_as -> e_or as_tail .
 as_tail -> "as" t as_tail | .
 e_or -> e_and or_tail .
-or_tail -> "or" e_and or_tail .
+or_tail -> "or" e_and or_tail | .
 e_and -> e_comp and_tail .
 and_tail -> "and" e_comp and_tail | .
 e_comp -> e_add comp_tail .
