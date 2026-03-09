@@ -47,12 +47,12 @@ t:
     object_t |
     LP par_t RP;
 
-par_t: par_t_parse_NAME | fun_t;
-par_t_parse_NAME: 
-    NAME  par_after_NAME |
-    nonNAME_t;
-par_after_NAME: DD t param_tail |;
-nonNAME_t: 
+par_t: par_t_parse_id | fun_t;
+par_t_parse_id: 
+    NAME  par_after_id |
+    non_id_t;
+par_after_id: DD t param_tail |;
+non_id_t: 
     basic_t |
     array_t |
     pointer_t |
@@ -62,7 +62,7 @@ nonNAME_t:
 
 
 basic_t: INT | CHAR | BOOL | VOID;
-array_t: LSB CINT RSB t;
+array_t: LSB c_int RSB t;
 pointer_t: POWER t;
 object_t: LB params RB;
 fun_t: DD t_list DD t;
@@ -115,9 +115,8 @@ e_let: LET prog IN expr_list END;
 e_while: WHILE e DO expr_list END;
 e_if: IF e THEN expr_list if_tail END;
 if_tail: ELSE expr_list |;
-
-
-
+c_int: opt_add_op CINT;
+opt_add_op: add_comp |;
 
 
 

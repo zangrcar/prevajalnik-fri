@@ -34,7 +34,7 @@ nonid_t ->
 
 
 basic_t -> "int" | "char" | "bool" | "void" .
-array_t -> "[" int "]" t .
+array_t -> "[" c_int "]" t .
 pointer_t -> "^" t .
 object_t -> "{" params "}" .
 fun_t -> ":" t_list ":" t .
@@ -87,7 +87,8 @@ e_let -> "let" prog "in" expr_list "end" .
 e_while -> "while" e "do" expr_list "end" .
 e_if -> "if" e "then" expr_list if_tail "end" .
 if_tail -> "else" expr_list | .
-
+c_int -> opt_add_comp cint .
+opt_add_comp -> add_comp | .
 
 
 

@@ -23,7 +23,7 @@ fun add(a:int, b:int) : int = a + b
 fun g(x:int) : int = x
 fun id(x:int) : int = x
 
-fun cints() : int = 42
+fun cints() : int = -42
 fun cbool() : bool = true
 fun cchar1() : char = 'a'
 fun cchar2() : char = '\''
@@ -61,4 +61,5 @@ fun test(a:int, b:bool, p:^int) : int =
         else
             while a > 0 do a = a - 1 end
         end
-    end
+    end,
+    --42
