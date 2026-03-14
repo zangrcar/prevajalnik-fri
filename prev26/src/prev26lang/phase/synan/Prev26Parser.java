@@ -156,6 +156,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_source; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitSource(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SourceContext source() throws RecognitionException {
@@ -193,6 +198,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_prog; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitProg(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ProgContext prog() throws RecognitionException {
@@ -230,6 +240,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_prog_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitProg_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Prog_tailContext prog_tail() throws RecognitionException {
@@ -294,6 +309,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_d; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitD(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final DContext d() throws RecognitionException {
@@ -375,6 +395,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_fun_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitFun_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Fun_tailContext fun_tail() throws RecognitionException {
@@ -429,6 +454,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_params; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitParams(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ParamsContext params() throws RecognitionException {
@@ -480,6 +510,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_param_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitParam_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Param_tailContext param_tail() throws RecognitionException {
@@ -531,6 +566,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_param; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitParam(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ParamContext param() throws RecognitionException {
@@ -582,6 +622,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitT(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final TContext t() throws RecognitionException {
@@ -667,6 +712,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_par_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPar_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Par_tContext par_t() throws RecognitionException {
@@ -726,6 +776,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_par_t_parse_id; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPar_t_parse_id(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Par_t_parse_idContext par_t_parse_id() throws RecognitionException {
@@ -786,6 +841,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_par_after_id; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPar_after_id(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Par_after_idContext par_after_id() throws RecognitionException {
@@ -849,6 +909,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_non_id_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitNon_id_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Non_id_tContext non_id_t() throws RecognitionException {
@@ -925,6 +990,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_basic_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitBasic_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Basic_tContext basic_t() throws RecognitionException {
@@ -971,6 +1041,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_array_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitArray_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Array_tContext array_t() throws RecognitionException {
@@ -1010,6 +1085,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_pointer_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPointer_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Pointer_tContext pointer_t() throws RecognitionException {
@@ -1046,6 +1126,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_object_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitObject_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Object_tContext object_t() throws RecognitionException {
@@ -1085,6 +1170,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_comps; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitComps(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CompsContext comps() throws RecognitionException {
@@ -1136,6 +1226,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_comp_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitComp_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Comp_tailContext comp_tail() throws RecognitionException {
@@ -1187,6 +1282,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_comp; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitComp(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CompContext comp() throws RecognitionException {
@@ -1230,6 +1330,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_fun_t; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitFun_t(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Fun_tContext fun_t() throws RecognitionException {
@@ -1271,6 +1376,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_t_list; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitT_list(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final T_listContext t_list() throws RecognitionException {
@@ -1330,6 +1440,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_t_list_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitT_list_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final T_list_tailContext t_list_tail() throws RecognitionException {
@@ -1382,6 +1497,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expr_list; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitExpr_list(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Expr_listContext expr_list() throws RecognitionException {
@@ -1420,6 +1540,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_tailContext e_tail() throws RecognitionException {
@@ -1479,6 +1604,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final EContext e() throws RecognitionException {
@@ -1514,6 +1644,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_assign; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_assign(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_assignContext e_assign() throws RecognitionException {
@@ -1575,6 +1710,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_as; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_as(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_asContext e_as() throws RecognitionException {
@@ -1613,6 +1753,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_as_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitAs_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final As_tailContext as_tail() throws RecognitionException {
@@ -1677,6 +1822,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_or; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_or(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_orContext e_or() throws RecognitionException {
@@ -1715,6 +1865,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_or_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitOr_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Or_tailContext or_tail() throws RecognitionException {
@@ -1780,6 +1935,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_and; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_and(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_andContext e_and() throws RecognitionException {
@@ -1818,6 +1978,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_and_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitAnd_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final And_tailContext and_tail() throws RecognitionException {
@@ -1884,6 +2049,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_compare; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_compare(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_compareContext e_compare() throws RecognitionException {
@@ -1921,6 +2091,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_compare_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitCompare_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Compare_tailContext compare_tail() throws RecognitionException {
@@ -1991,6 +2166,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_compare_op; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitCompare_op(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Compare_opContext compare_op() throws RecognitionException {
@@ -2035,6 +2215,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_add; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_add(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_addContext e_add() throws RecognitionException {
@@ -2075,6 +2260,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_add_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitAdd_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Add_tailContext add_tail() throws RecognitionException {
@@ -2145,6 +2335,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_add_comp; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitAdd_comp(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Add_compContext add_comp() throws RecognitionException {
@@ -2189,6 +2384,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_mul; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_mul(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_mulContext e_mul() throws RecognitionException {
@@ -2229,6 +2429,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_mul_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitMul_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Mul_tailContext mul_tail() throws RecognitionException {
@@ -2303,6 +2508,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_mul_op; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitMul_op(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Mul_opContext mul_op() throws RecognitionException {
@@ -2350,6 +2560,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_prefix; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_prefix(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_prefixContext e_prefix() throws RecognitionException {
@@ -2415,6 +2630,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_prefix_op; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPrefix_op(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Prefix_opContext prefix_op() throws RecognitionException {
@@ -2459,6 +2679,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_postfix; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_postfix(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_postfixContext e_postfix() throws RecognitionException {
@@ -2506,6 +2731,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_postfix_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPostfix_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Postfix_tailContext postfix_tail() throws RecognitionException {
@@ -2634,6 +2864,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_basic; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_basic(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_basicContext e_basic() throws RecognitionException {
@@ -2735,6 +2970,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_const; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_const(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_constContext e_const() throws RecognitionException {
@@ -2810,6 +3050,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_bool_const; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitBool_const(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Bool_constContext bool_const() throws RecognitionException {
@@ -2849,6 +3094,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_void_const; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitVoid_const(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Void_constContext void_const() throws RecognitionException {
@@ -2879,6 +3129,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_ptr_const; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitPtr_const(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Ptr_constContext ptr_const() throws RecognitionException {
@@ -2912,6 +3167,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_sizeof; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_sizeof(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_sizeofContext e_sizeof() throws RecognitionException {
@@ -2952,6 +3212,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_let; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_let(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_letContext e_let() throws RecognitionException {
@@ -2998,6 +3263,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_while; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_while(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_whileContext e_while() throws RecognitionException {
@@ -3047,6 +3317,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_e_if; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitE_if(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final E_ifContext e_if() throws RecognitionException {
@@ -3090,6 +3365,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_if_tail; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitIf_tail(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final If_tailContext if_tail() throws RecognitionException {
@@ -3138,6 +3418,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_c_int; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitC_int(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final C_intContext c_int() throws RecognitionException {
@@ -3172,6 +3457,11 @@ public class Prev26Parser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_opt_add_op; }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Prev26ParserVisitor ) return ((Prev26ParserVisitor<? extends T>)visitor).visitOpt_add_op(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final Opt_add_opContext opt_add_op() throws RecognitionException {
