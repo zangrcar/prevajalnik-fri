@@ -349,6 +349,13 @@ public class Prev26ParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitEmpty_expr_list(Prev26Parser.Empty_expr_listContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitE_basic(Prev26Parser.E_basicContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

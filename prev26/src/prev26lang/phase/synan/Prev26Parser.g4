@@ -101,7 +101,8 @@ postfix_tail:
     D NAME postfix_tail |
     POWER postfix_tail | 
     LSB e RSB postfix_tail |
-    LP expr_list RP postfix_tail |;
+    LP empty_expr_list RP postfix_tail |;
+empty_expr_list: expr_list | ;
 
 e_basic: 
     NAME | 
@@ -122,3 +123,8 @@ e_if: IF e THEN expr_list if_tail END;
 if_tail: ELSE expr_list |;
 c_int: opt_add_op CINT;
 opt_add_op: add_comp |;
+
+
+
+
+

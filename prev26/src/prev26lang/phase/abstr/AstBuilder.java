@@ -638,13 +638,24 @@ public class AstBuilder extends Prev26ParserBaseVisitor<AST.Node> {
             return applyPostfixTail(arrExpr, ctx.postfix_tail());
         }
 
-        if (ctx.expr_list() != null) {
-            AST.Nodes<AST.Expr> args = exprNodes(ctx.expr_list());
+        if (ctx.empty_expr_list() != null) {
+            AST.Nodes<AST.Expr> args = visitEmpty_expr_list(ctx.empty_expr_list());
             AST.Expr callExpr = bind(new AST.CallExpr(expr, args), expr, ctx.RP().getSymbol());
             return applyPostfixTail(callExpr, ctx.postfix_tail());
         }
 
         return expr;
+    }
+
+	@Override
+	public AST.Nodes<AST.Expr> visitEmpty_expr_list(Prev26Parser.Empty_expr_listContext ctx) {
+        List<AST.Expr> exprs = new ArrayList<>();
+
+        if (ctx == null || ctx.expr_list() == null) {
+			return bind(new AST.Nodes<>(exprs), ctx);
+        }
+
+        return exprNodes(ctx.expr_list());
     }
 
     @Override

@@ -296,6 +296,12 @@ public interface Prev26ParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPostfix_tail(Prev26Parser.Postfix_tailContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link Prev26Parser#empty_expr_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmpty_expr_list(Prev26Parser.Empty_expr_listContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link Prev26Parser#e_basic}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
