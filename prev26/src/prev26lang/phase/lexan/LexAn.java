@@ -54,8 +54,7 @@ public class LexAn extends Phase {
 			super(type, text);
 			setLine(0);
 			setCharPositionInLine(0);
-			location = new Location(getLine(), getCharPositionInLine(), getLine(),
-					getCharPositionInLine() + getText().length() - 1);
+			location = new Location(0, 0, 0, 0);
 		}
 
 		/**
@@ -64,11 +63,13 @@ public class LexAn extends Phase {
 		 */
 		@SuppressWarnings("doclint:missing")
 		public LocLogToken(final Pair<TokenSource, CharStream> source, final int type, final int channel,
-				final int start, final int stop) {
+				final int start, final int stop, final int line, final int rawCol) {
 			super(source, type, channel, start, stop);
-			setCharPositionInLine(getCharPositionInLine() - getText().length() + 1);
-			location = new Location(getLine(), getCharPositionInLine(), getLine(),
-					getCharPositionInLine() + getText().length() - 1);
+			setCharPositionInLine(rawCol);
+
+			final int begCol = visualColumn(source.b, start);
+        		final int endCol = visualEndColumn(source.b, start, stop);
+			location = new Location(line, begCol, line, endCol);
 		}
 
 		@Override
@@ -115,10 +116,43 @@ public class LexAn extends Phase {
 		@Override
 		public LocLogToken create(Pair<TokenSource, CharStream> source, int type, String text, int channel, int start,
 				int stop, int line, int charPositionInLine) {
-			LocLogToken token = new LocLogToken(source, type, channel, start, stop);
+			LocLogToken token = new LocLogToken(source, type, channel, start, stop, line, charPositionInLine);
 			token.log(xmlLogger);
 			return token;
 		}
+	}
+
+	private int visualColumn(CharStream input, int absIndex) {
+		if (absIndex < 0) return 1;
+
+		int lineStart = absIndex;
+		while (lineStart > 0) {
+			char c = input.getText(Interval.of(lineStart - 1, lineStart - 1)).charAt(0);
+			if (c == '\n' || c == '\r') break;
+				lineStart--;
+		}
+
+		int col = 1;
+		for (int i = lineStart; i < absIndex; i++) {
+			char c = input.getText(Interval.of(i, i)).charAt(0);
+			if (c == '\t')
+				col += 8 - ((col - 1) % 8);
+			else
+				col++;
+		}
+		return col;
+	}
+
+	private int visualEndColumn(CharStream input, int start, int stop) {
+		int col = visualColumn(input, start);
+		for (int i = start; i <= stop; i++) {
+			char c = input.getText(Interval.of(i, i)).charAt(0);
+			if (c == '\t')
+				col += 8 - ((col - 1) % 8);
+			else
+				col++;
+		}
+		return col - 1;
 	}
 
 }

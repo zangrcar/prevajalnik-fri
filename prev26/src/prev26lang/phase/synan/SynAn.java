@@ -30,8 +30,9 @@ public class SynAn extends Phase {
 		parser.addErrorListener(new BaseErrorListener() {
 			public void syntaxError(final Recognizer<?, ?> recognizer, final Object offendingSymbol, final int line,
 					final int charPositionInLine, final String msg, final RecognitionException e) {
-				throw new Report.Error(new Location(line, charPositionInLine), //
-						"Unexpected symbol '" + ((LexAn.LocLogToken) offendingSymbol).getText() + "'.");
+				LexAn.LocLogToken tok = (LexAn.LocLogToken) offendingSymbol;
+				throw new Report.Error(tok.location(),
+					"Unexpected symbol '" + tok.getText() + "'.");
 			}
 		});
 	}

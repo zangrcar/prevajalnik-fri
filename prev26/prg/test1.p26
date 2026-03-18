@@ -1,5 +1,3 @@
-
-	a
 fun f(a: int, b: char, c: bool): bool =
 	c = a + b,
 	let 
