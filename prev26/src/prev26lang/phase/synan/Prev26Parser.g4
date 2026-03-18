@@ -67,7 +67,7 @@ basic_t: INT | CHAR | BOOL | VOID;
 array_t: LSB c_int RSB t;
 pointer_t: POWER t;
 object_t: LB comps RB;
-comps: comp comp_tail |;
+comps: comp comp_tail;
 comp_tail: C comp comp_tail |;
 comp: NAME DD t;
 fun_t: DD t_list DD t;

@@ -296,10 +296,6 @@ public class AstBuilder extends Prev26ParserBaseVisitor<AST.Node> {
     public AST.Nodes<AST.CompDefn> visitComps(Prev26Parser.CompsContext ctx) {
         List<AST.CompDefn> comps = new ArrayList<>();
 
-        if (ctx == null || ctx.comp() == null) {
-            return bind(new AST.Nodes<>(comps), ctx);
-        }
-
         comps.add(visitComp(ctx.comp()));
         comps.addAll(collectCompTail(ctx.comp_tail()));
 
