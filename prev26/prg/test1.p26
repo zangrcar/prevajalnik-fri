@@ -1,3 +1,5 @@
 fun f() : (a: int)
 fun g() : {b:int} = f()
+fun f() : int = 1 + (2+3)
+fun g() : int = if i == 0 then -1 else +1 end
 fun h() : int = f()()
