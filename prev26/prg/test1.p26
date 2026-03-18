@@ -1,5 +1,13 @@
-fun f() : (a: int)
-fun g() : {b:int} = f()
-fun f() : int = 1 + (2+3)
-fun g() : int = if i == 0 then -1 else +1 end
-fun h() : int = f()()
+
+fun f(a: int, b: char, c: bool): bool =
+	c = a + b,
+	let 
+		typ B = (a:bool, c: int, d: char)
+		var a: int
+		typ A = [5]char,
+		var l: A
+	in
+		a + b,
+		c*b
+
+	end

@@ -3,7 +3,9 @@ package prev26lang.phase.seman;
 import java.util.*;
 
 import prev26lang.common.report.*;
+import prev26lang.phase.Phase;
 import prev26lang.phase.abstr.*;
+
 
 /**
  * Name resolver.
@@ -16,7 +18,9 @@ import prev26lang.phase.abstr.*;
  * 
  * @author bostjan.slivnik@fri.uni-lj.si
  */
-public class NameResolver implements AST.FullVisitor<Object, ??? INSERT WHATEVER NEEDED ???> {
+public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase> {
+
+	enum Phase { DECLARE, RESOLVE }
 
 	/** Constructs a new name resolver. */
 	public NameResolver() {
@@ -25,7 +29,149 @@ public class NameResolver implements AST.FullVisitor<Object, ??? INSERT WHATEVER
 	/** The symbol table. */
 	private SymbTable symbTable = new SymbTable();
 
-	??? TODO ???
+	private void insertDefn(AST.Defn defn) {
+		// not handled by name resolver
+		if (defn instanceof AST.CompDefn)
+			return;
+
+		try {
+			symbTable.ins(defn.name, defn);
+		} catch (SymbTable.CannotInsNameException ex) {
+			throw new Report.Error(
+				defn,
+				"Name '" + defn.name + "' is already defined in this scope."
+			);
+		}
+	}
+
+	private void resolveTypeName(AST.NameType node) {
+		final AST.Defn defn;
+
+		try {
+			defn = symbTable.fnd(node.name);
+		} catch (SymbTable.CannotFndNameException ex) {
+			throw new Report.Error(
+				node,
+				"Undefined type name '" + node.name + "'."
+			);
+		}
+
+		if (!(defn instanceof AST.TypDefn)) {
+			throw new Report.Error(
+				node,
+				"'" + node.name + "' is not a type name."
+			);
+		}
+
+		SemAn.defAtAttr.put(node, defn);
+	}
+
+	private void resolveExprName(AST.NameExpr node) {
+		final AST.Defn defn;
+
+		try {
+			defn = symbTable.fnd(node.name);
+		} catch (SymbTable.CannotFndNameException ex) {
+			throw new Report.Error(
+				node,
+				"Undefined value/function name '" + node.name + "'."
+			);
+		}
+
+		if(defn instanceof AST.TypDefn) {
+			throw new Report.Error(
+				node,
+				"'" + node.name + "' is a type name, not value/function name."
+			);
+		}
+
+		SemAn.defAtAttr.put(node, defn);
+	}
+
+	private void declareDefs(AST.Nodes<? extends AST.Defn> defns) {
+		for (AST.Defn defn : defns) {
+			insertDefn(defn);
+		}
+	}
+
+	private void resolveDefs(AST.Nodes<? extends AST.Defn> defns) {
+		for (AST.Defn defn : defns) {
+			defn.accept(this, Phase.RESOLVE);
+		}
+	}
+
+	@Override
+	public Object visit(AST.Nodes<? extends AST.Node> nodes, Phase phase) {
+		// A sequence of full definitions = one scope's declaration block
+		// (program-level definitions; let-definitions are handled in visit(LetExpr)).
+		if (nodes.size() > 0 && nodes.first() instanceof AST.FullDefn) {
+			@SuppressWarnings("unchecked")
+			AST.Nodes<? extends AST.Defn> defns = (AST.Nodes<? extends AST.Defn>) nodes;
+			declareDefs(defns);
+			resolveDefs(defns);
+			return null;
+		}
+
+		// Default traversal for all other node sequences.
+		for (AST.Node node : nodes) {
+			if (node != null)
+				node.accept(this, phase);
+		}
+		return null;
+	}
+
+	@Override
+	public Object visit(AST.DefFunDefn defFunDefn, Phase phase) {
+		// Parameter types and result type are resolved OUTSIDE the function scope.
+		defFunDefn.pars.accept(this, phase);
+		defFunDefn.type.accept(this, phase);
+
+		// Parameters and body are INSIDE the function scope.
+		symbTable.newScope();
+		declareDefs(defFunDefn.pars);
+		defFunDefn.expr.accept(this, phase);
+		symbTable.oldScope();
+
+		return null;
+	}
+
+	@Override
+	public Object visit(AST.ExtFunDefn extFunDefn, Phase phase) {
+		// Same rule as for normal functions: parameter types/result type are outside.
+		extFunDefn.pars.accept(this, phase);
+		extFunDefn.type.accept(this, phase);
+
+		// Parameters still live in the function scope (also checks duplicate params).
+		symbTable.newScope();
+		declareDefs(extFunDefn.pars);
+		symbTable.oldScope();
+
+		return null;
+	}
+
+	@Override
+	public Object visit(AST.LetExpr letExpr, Phase phase) {
+		symbTable.newScope();
+		declareDefs(letExpr.defns);
+		resolveDefs(letExpr.defns);
+		letExpr.expr.accept(this, phase);
+		symbTable.oldScope();
+
+		return null;
+	}
+
+	@Override
+	public Object visit(AST.NameType nameType, Phase phase) {
+		resolveTypeName(nameType);
+		return null;
+	}
+
+	@Override
+	public Object visit(AST.NameExpr nameExpr, Phase phase) {
+		resolveExprName(nameExpr);
+		return null;
+	}
+
 
 	// ===== SYMBOL TABLE =====
 
