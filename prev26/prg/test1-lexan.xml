@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><?xml-stylesheet type="text/xsl" href="../lib/xsl/lexan.xsl"?><lexan><token kind="NAME" lexeme="a"><location begcolumn="2" begline="2" endcolumn="2" endline="2"/></token><token kind="FUN" lexeme="fun"><location begcolumn="1" begline="3" endcolumn="3" endline="3"/></token></lexan>

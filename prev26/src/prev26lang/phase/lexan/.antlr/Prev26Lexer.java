@@ -106,22 +106,18 @@ public class Prev26Lexer extends Lexer {
 
 
 
-	    @Override
+	    	@Override
 		public LexAn.LocLogToken nextToken() {
 			return (LexAn.LocLogToken) super.nextToken();
 		}
 
-		// private void lexError(String msg) {
-	    //     throw new Report.Error(new Location(getLine(), getCharPositionInLine()), msg);
-	    // }
-
 		private void lexError(String msg) {
-	        int abs = this._tokenStartCharIndex;
-	        int line = getLine();
-	        int col  = visualColumn(abs);
+			int abs = this._tokenStartCharIndex;
+			int line = getLine();
+			int col  = visualColumn(abs);
 
-	        throw new Report.Error(new Location(line, col+1), msg);
-	    }
+			throw new Report.Error(new Location(line, col+1), msg);
+		}
 
 		private int visualColumn(int absIndex) {
 			int lineStart = absIndex - 1;
