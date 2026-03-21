@@ -7,5 +7,9 @@ fun f(a: int, b: char, c: bool): bool =
 		var l: A
 	in
 		a + b,
-		c*b
+		c*b,
+		f()
 	end
+
+fun g(a: int): int =
+	g()
