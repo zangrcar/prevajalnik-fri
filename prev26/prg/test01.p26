@@ -1,0 +1,15 @@
+fun f(a: int, b: char, c: bool): bool =
+	c = a + b,
+	let 
+		typ B = (a:bool, c: int, d: char)
+		var a: int
+		typ A = [5]char
+		var l: A
+	in
+		a + b,
+		c*b,
+		f()
+	end
+
+fun g(a: int): int =
+	g()

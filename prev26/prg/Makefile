@@ -7,6 +7,9 @@ PHASE		= all
 TARGETPHASE	?= $(PHASE)
 LOGGEDPHASE	?= $(PHASE)
 
+TESTS := $(basename $(wildcard test*.p26))
+ERRORS := $(basename $(wildcard err*.p26))
+
 .PHONY	: %
 %	: %.p26
 	$(RM) -fr $@-*.xml $@-*.html
@@ -16,3 +19,10 @@ LOGGEDPHASE	?= $(PHASE)
 clean   :
 	$(RM) *~
 	$(RM) *xml *html
+
+
+.PHONY: alltests
+alltests: $(TESTS)
+
+.PHONY: errors
+errors: $(ERRORS)
