@@ -3,7 +3,6 @@ package prev26lang.phase.seman;
 import java.util.*;
 
 import prev26lang.common.report.*;
-import prev26lang.phase.Phase;
 import prev26lang.phase.abstr.*;
 
 
