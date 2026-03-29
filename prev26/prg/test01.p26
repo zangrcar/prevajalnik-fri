@@ -1,4 +1,4 @@
 typ a = (c: char, a: int)
 typ b = (c: char, a: int)
 
-fun main(): int
+fun main(): int = 0

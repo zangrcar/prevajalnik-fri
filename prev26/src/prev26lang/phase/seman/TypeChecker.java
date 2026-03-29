@@ -7,6 +7,9 @@ import prev26lang.phase.abstr.*;
 
 public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
+    /** Have we already checked the program root for function main? */
+    private boolean checkedProgramRoot = false;
+
     public TypeChecker() {
     }
 
@@ -190,6 +193,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		if (!equiv(type, TYP.CharType.type))
 			throw new Report.Error(node, "Expected type char.");
 	}
+
     /**
      * Require type void.
      */
@@ -255,6 +259,34 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     }
 
     /**
+     * Checks whether a type is a legal parameter/assignment/comparison type.
+     */
+    private boolean isLegalSimpleOrCallableType(final TYP.Type type) {
+        final TYP.Type actual = actualType(type);
+		return (actual instanceof TYP.IntType)
+			|| (actual instanceof TYP.CharType)
+			|| (actual instanceof TYP.BoolType)
+			|| (actual instanceof TYP.PtrType)
+			|| (actual instanceof TYP.FunType);
+    }
+
+    /**
+     * Checks whether a type is a legal function result type.
+     */
+    private boolean isLegalFunResultType(final TYP.Type type) {
+        final TYP.Type actual = actualType(type);
+		return (actual instanceof TYP.VoidType) || isLegalSimpleOrCallableType(actual);
+    }
+
+    /**
+     * Require a legal parameter/assignment/comparison type.
+     */
+    private void requireSimpleOrCallableType(final AST.Node node, final TYP.Type type) {
+        if (!isLegalSimpleOrCallableType(type))
+			throw new Report.Error(node, "Illegal type in this context.");
+    }
+
+    /**
      * Checks whether a type is a legal variable type.
      */
     private void checkVarType(final AST.Node node, final TYP.Type type) {
@@ -265,14 +297,16 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
      * Checks whether a type is a legal parameter type.
      */
     private void checkParType(final AST.Node node, final TYP.Type type) {
-        requireNonVoid(node, type);
+        if (!isLegalSimpleOrCallableType(type))
+			throw new Report.Error(node, "Illegal parameter type.");
     }
 
     /**
      * Checks whether a type is a legal function result type.
      */
     private void checkFunResultType(final AST.Node node, final TYP.Type type) {
-        // TODO
+        if (!isLegalFunResultType(type))
+			throw new Report.Error(node, "Illegal function result type.");
     }
 
     /**
@@ -283,12 +317,11 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     }
 
     /**
-     * Optional:
-     * check main function shape if your assignment requires it.
+     * Check main function shape.
      */
     private void checkMain(final AST.Nodes<? extends AST.Node> nodes) {
 		for (AST.Node node : nodes) {
-			if (node instanceof AST.FunDefn funDefn && funDefn.name.equals("main")) {
+			if (node instanceof AST.DefFunDefn funDefn && funDefn.name.equals("main")) {
 				TYP.FunType mainType = requireFunType(funDefn, requireDefnType(funDefn));
 				if (mainType.parTypes.size() != 0 || !equiv(mainType.resType, TYP.IntType.type))
 					throw new Report.Error(funDefn, "Function main must have type fun(() -> int).");
@@ -302,11 +335,20 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.Nodes<? extends AST.Node> nodes, Object arg) {
+        final boolean isProgramRoot = (!checkedProgramRoot)
+			&& (nodes.size() > 0)
+			&& (nodes.first() instanceof AST.FullDefn);
+
+		if (isProgramRoot)
+			checkedProgramRoot = true;
+
         for (AST.Node node : nodes) {
 			if (node != null)
 				node.accept(this, arg);
 		}
-		checkMain(nodes);
+
+		if (isProgramRoot)
+			checkMain(nodes);
         return null;
     }
 
@@ -383,12 +425,14 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     @Override
     public Object visit(AST.ArrType arrType, Object arg) {
         arrType.elemType.accept(this, arg);
+		requireNonVoid(arrType.elemType, requireType(arrType.elemType));
         return null;
     }
 
     @Override
     public Object visit(AST.PtrType ptrType, Object arg) {
         ptrType.baseType.accept(this, arg);
+		requireNonVoid(ptrType.baseType, requireType(ptrType.baseType));
         return null;
     }
 
@@ -408,10 +452,13 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.FunType funType, Object arg) {
-        for (AST.Type parType : funType.parTypes)
+        for (AST.Type parType : funType.parTypes) {
 			parType.accept(this, arg);
+			checkParType(parType, requireType(parType));
+		}
 
 		funType.resType.accept(this, arg);
+		checkFunResultType(funType.resType, requireType(funType.resType));
         return null;
     }
 
@@ -445,6 +492,8 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
 		requireArrType(arrExpr.arrExpr, arrType);
 		requireInt(arrExpr.idx, idxType);
+		if (!isAddr(arrExpr.arrExpr))
+			throw new Report.Error(arrExpr.arrExpr, "Expression is not addressable.");
         return null;
     }
 
@@ -460,6 +509,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 			throw new Report.Error(asgnExpr.fstExpr, "Left-hand side is not addressable.");
 
 		requireEquiv(asgnExpr, fstType, sndType);
+		requireSimpleOrCallableType(asgnExpr, fstType);
         return null;
     }
 
@@ -482,6 +532,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 			}
 			case EQU, NEQ, LTH, GTH, LEQ, GEQ -> {
 				requireEquiv(binExpr, fstType, sndType);
+				requireSimpleOrCallableType(binExpr.fstExpr, fstType);
 			}
 		}
         return null;
@@ -524,6 +575,9 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
 		TYP.Type recType = requireExprType(compExpr.recExpr);
 		TYP.RecType recActual = requireRecType(compExpr, recType);
+
+		if (!isAddr(compExpr.recExpr))
+			throw new Report.Error(compExpr.recExpr, "Expression is not addressable.");
 
 		LinkedHashMap<String, AST.CompDefn> comps = TypeConstructor.recComps.get(recActual);
 		if (comps == null)
@@ -575,6 +629,8 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     @Override
     public Object visit(AST.Exprs exprs, Object arg) {
         exprs.exprs.accept(this, arg);
+		for (AST.Expr expr : exprs.exprs)
+			requireExprType(expr);
         return null;
     }
 
@@ -584,7 +640,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		ifThenExpr.thenExpr.accept(this, arg);
 
 		requireBool(ifThenExpr.condExpr, requireExprType(ifThenExpr.condExpr));
-		requireVoid(ifThenExpr.thenExpr, requireExprType(ifThenExpr.thenExpr));
+		requireExprType(ifThenExpr.thenExpr);
         return null;
     }
 
@@ -595,8 +651,8 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		ifThenElseExpr.elseExpr.accept(this, arg);
 
 		requireBool(ifThenElseExpr.condExpr, requireExprType(ifThenElseExpr.condExpr));
-		requireVoid(ifThenElseExpr.thenExpr, requireExprType(ifThenElseExpr.thenExpr));
-		requireVoid(ifThenElseExpr.elseExpr, requireExprType(ifThenElseExpr.elseExpr));
+		requireExprType(ifThenElseExpr.thenExpr);
+		requireExprType(ifThenElseExpr.elseExpr);
         return null;
     }
 
@@ -606,7 +662,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		whileExpr.expr.accept(this, arg);
 
 		requireBool(whileExpr.condExpr, requireExprType(whileExpr.condExpr));
-		requireVoid(whileExpr.expr, requireExprType(whileExpr.expr));
+		requireExprType(whileExpr.expr);
         return null;
     }
 

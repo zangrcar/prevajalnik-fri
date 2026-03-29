@@ -447,7 +447,8 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 
 			SemAn.ofTypeAttr.put(arrExpr, elemType);
 			SemAn.isConstAttr.put(arrExpr, false);
-			SemAn.isAddrAttr.put(arrExpr, true);
+			SemAn.isAddrAttr.put(arrExpr,
+				Boolean.TRUE.equals(SemAn.isAddrAttr.get(arrExpr.arrExpr)));
         }
         return null;
     }
@@ -512,8 +513,10 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 			TYP.Type targetType = constructType(castExpr.type);
 
     		SemAn.ofTypeAttr.put(castExpr, targetType);
-			SemAn.isConstAttr.put(castExpr, false);
-			SemAn.isAddrAttr.put(castExpr, false);
+			SemAn.isConstAttr.put(castExpr,
+				Boolean.TRUE.equals(SemAn.isConstAttr.get(castExpr.expr)));
+			SemAn.isAddrAttr.put(castExpr,
+				Boolean.TRUE.equals(SemAn.isAddrAttr.get(castExpr.expr)));
         }
         return null;
     }
@@ -560,7 +563,10 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 			};
 
 			SemAn.ofTypeAttr.put(pfxExpr, type);
-			SemAn.isConstAttr.put(pfxExpr, false);
+			SemAn.isConstAttr.put(pfxExpr, switch (pfxExpr.oper) {
+				case NOT, ADD, SUB -> Boolean.TRUE.equals(SemAn.isConstAttr.get(pfxExpr.subExpr));
+				case PTR -> false;
+			});
 			SemAn.isAddrAttr.put(pfxExpr, false);
         }
         return null;
@@ -605,8 +611,14 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 
 			TYP.Type type = SemAn.ofTypeAttr.get(exprs.exprs.last());
 			SemAn.ofTypeAttr.put(exprs, type);
-			SemAn.isConstAttr.put(exprs, false);
-			SemAn.isAddrAttr.put(exprs, false);
+
+			boolean isConst = true;
+			for (AST.Expr expr : exprs.exprs)
+				isConst = isConst && Boolean.TRUE.equals(SemAn.isConstAttr.get(expr));
+
+			SemAn.isConstAttr.put(exprs, isConst);
+			SemAn.isAddrAttr.put(exprs,
+				Boolean.TRUE.equals(SemAn.isAddrAttr.get(exprs.exprs.last())));
         }
         return null;
     }
