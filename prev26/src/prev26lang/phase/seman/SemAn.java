@@ -46,7 +46,8 @@ public class SemAn extends Phase {
 	/** Tester for nodes that can be typed. */
 	private static final Predicate<AST.Node> validForOfType = //
 			(AST.Node node) -> (node instanceof AST.Expr) || //
-					((node instanceof AST.Defn) && ((node instanceof AST.TypDefn)) == false);
+					(node instanceof AST.Defn) || //
+					(node instanceof AST.Nodes<?>);
 
 	/** Attribute specifying what is a type of a node. */
 	public static final AST.Attribute<TYP.Type> ofTypeAttr = new AST.Attribute<TYP.Type>(validForOfType);
@@ -132,6 +133,8 @@ public class SemAn extends Phase {
 			if (validForOfType.test(node)) {
 				final TYP.Type type = ofTypeAttr.get(node);
 				if (type == null) {
+					if (node instanceof AST.Nodes<?>)
+						return;
 					if (Compiler.devMode()) {
 						xmlLogger.begElement("oftype");
 						xmlLogger.addAttribute("none", "");

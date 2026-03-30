@@ -223,14 +223,30 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
         return new TYP.FunType(parTypes, resType);
     }
 
+    private TYP.Type declaredValueType(AST.Defn defn) {
+        if (defn instanceof AST.VarDefn varDefn)
+            return constructType(varDefn.type);
+
+        if (defn instanceof AST.FunDefn funDefn)
+            return constructFunType(funDefn.pars, funDefn.type);
+
+        if (defn instanceof AST.ParDefn parDefn)
+            return constructType(parDefn.type);
+
+        if (defn instanceof AST.CompDefn compDefn)
+            return constructType(compDefn.type);
+
+        throw new Report.InternalError();
+    }
+
     private void resolveVarDefn(AST.VarDefn varDefn) {
-        final TYP.Type varType = constructType(varDefn.type);
-		SemAn.ofTypeAttr.put(varDefn, varType);
+        constructType(varDefn.type);
+		SemAn.ofTypeAttr.put(varDefn, TYP.VoidType.type);
     }
 
     private void declareFunDefn(AST.FunDefn funDefn) {
-       	final TYP.FunType funType = constructFunType(funDefn.pars, funDefn.type);
-		SemAn.ofTypeAttr.put(funDefn, funType);
+       	constructFunType(funDefn.pars, funDefn.type);
+		SemAn.ofTypeAttr.put(funDefn, TYP.VoidType.type);
 
 		for (AST.ParDefn parDefn : funDefn.pars) {
 			SemAn.ofTypeAttr.put(parDefn, constructType(parDefn.type));
@@ -269,6 +285,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
             nodes.accept(this, Phase.RESOLVE_VARS);
             nodes.accept(this, Phase.DECLARE_FUNS);
             nodes.accept(this, Phase.RESOLVE_FUN_BODIES);
+            SemAn.ofTypeAttr.put(nodes, TYP.VoidType.type);
             return null;
         }
 
@@ -286,6 +303,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
         switch (phase) {
             case DECLARE_TYPES:
                 SemAn.isTypeAttr.put(typDefn, new TYP.NameType(typDefn.name));
+                SemAn.ofTypeAttr.put(typDefn, TYP.VoidType.type);
                 break;
 
             case DEFINE_TYPES:
@@ -423,7 +441,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
     public Object visit(AST.NameExpr nameExpr, Phase phase) {
         if (phase == Phase.RESOLVE_FUN_BODIES) {
             AST.Defn defn = SemAn.defAtAttr.get(nameExpr);
-			TYP.Type type = SemAn.ofTypeAttr.get(defn);
+			TYP.Type type = declaredValueType(defn);
 
 			SemAn.ofTypeAttr.put(nameExpr, type);
 			SemAn.isConstAttr.put(nameExpr, false);

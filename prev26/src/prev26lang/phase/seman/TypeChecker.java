@@ -138,16 +138,25 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     }
 
     /**
-     * Checks that a definition has a type.
+     * Returns the declared semantic type of a definition.
      */
-    private TYP.Type requireDefnType(final AST.Defn defn) {
-        final TYP.Type type =
-			(defn instanceof AST.TypDefn)
-				? SemAn.isTypeAttr.get(defn)
-				: SemAn.ofTypeAttr.get(defn);
-		if (type == null)
-			throw new Report.InternalError();
-		return type;
+    private TYP.Type declaredDefnType(final AST.Defn defn) {
+        if (defn instanceof AST.TypDefn)
+            return requireType(defn);
+
+        if (defn instanceof AST.VarDefn varDefn)
+            return requireType(varDefn.type);
+
+        if (defn instanceof AST.FunDefn funDefn)
+            return declaredFunType(funDefn);
+
+        if (defn instanceof AST.ParDefn parDefn)
+            return requireType(parDefn.type);
+
+        if (defn instanceof AST.CompDefn compDefn)
+            return requireType(compDefn.type);
+
+        throw new Report.InternalError();
     }
 
     /**
@@ -316,13 +325,22 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
         requireNonVoid(node, type);
     }
 
+    private TYP.FunType declaredFunType(final AST.FunDefn funDefn) {
+        final ArrayList<TYP.Type> parTypes = new ArrayList<>();
+        for (AST.ParDefn parDefn : funDefn.pars)
+            parTypes.add(requireType(parDefn.type));
+
+        final TYP.Type resType = requireType(funDefn.type);
+        return new TYP.FunType(parTypes, resType);
+    }
+
     /**
      * Check main function shape.
      */
     private void checkMain(final AST.Nodes<? extends AST.Node> nodes) {
 		for (AST.Node node : nodes) {
 			if (node instanceof AST.DefFunDefn funDefn && funDefn.name.equals("main")) {
-				TYP.FunType mainType = requireFunType(funDefn, requireDefnType(funDefn));
+				TYP.FunType mainType = declaredFunType(funDefn);
 				if (mainType.parTypes.size() != 0 || !equiv(mainType.resType, TYP.IntType.type))
 					throw new Report.Error(funDefn, "Function main must have type fun(() -> int).");
 				return;
@@ -363,7 +381,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     @Override
     public Object visit(AST.VarDefn varDefn, Object arg) {
         varDefn.type.accept(this, arg);
-		TYP.Type varType = requireDefnType(varDefn);
+		TYP.Type varType = requireType(varDefn.type);
     	checkVarType(varDefn, varType);
         return null;
     }
@@ -376,7 +394,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		defFunDefn.type.accept(this, arg);
 		defFunDefn.expr.accept(this, arg);
 
-		TYP.FunType funType = requireFunType(defFunDefn, requireDefnType(defFunDefn));
+		TYP.FunType funType = declaredFunType(defFunDefn);
 		checkFunResultType(defFunDefn, funType.resType);
 
 		TYP.Type bodyType = requireExprType(defFunDefn.expr);
@@ -391,7 +409,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
 		extFunDefn.type.accept(this, arg);
 
-		TYP.FunType funType = requireFunType(extFunDefn, requireDefnType(extFunDefn));
+		TYP.FunType funType = declaredFunType(extFunDefn);
 		checkFunResultType(extFunDefn, funType.resType);
         return null;
     }
@@ -400,7 +418,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     public Object visit(AST.ParDefn parDefn, Object arg) {
         parDefn.type.accept(this, arg);
 
-		TYP.Type parType = requireDefnType(parDefn);
+		TYP.Type parType = requireType(parDefn.type);
 		checkParType(parDefn, parType);
         return null;
     }
@@ -409,7 +427,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     public Object visit(AST.CompDefn compDefn, Object arg) {
         compDefn.type.accept(this, arg);
 
-		TYP.Type compType = requireDefnType(compDefn);
+		TYP.Type compType = requireType(compDefn.type);
 		checkCompType(compDefn, compType);
         return null;
     }
