@@ -106,6 +106,41 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		return false;
 	}
 
+	/**
+	 * if I am going to need to allow nil instead of pointers and none instead of everything else
+	 */
+
+	private boolean isNilLiteral(final AST.Expr expr) {
+		return (expr instanceof AST.AtomExpr atomExpr) &&
+			(atomExpr.type == AST.AtomExpr.Type.PTR);
+	}
+
+	private boolean isNoneLiteral(final AST.Expr expr) {
+		return (expr instanceof AST.AtomExpr atomExpr) &&
+			(atomExpr.type == AST.AtomExpr.Type.VOID);
+	}
+
+	private boolean isPointerLike(final TYP.Type type) {
+		return actualType(type) instanceof TYP.PtrType;
+	}
+
+	private boolean isFunctionLike(final TYP.Type type) {
+		return actualType(type) instanceof TYP.FunType;
+	}
+
+	private boolean compatible(final TYP.Type expectedType, final AST.Expr expr) {
+		final TYP.Type actualExprType = requireExprType(expr);
+
+		if (equiv(expectedType, actualExprType))
+			return true;
+
+		// Extension: nil is compatible with any pointer type.
+		if (isNilLiteral(expr) && isPointerLike(expectedType))
+			return true;
+
+		return false;
+	}
+
     /**
      * Checks that a type is not null and already constructed.
      */

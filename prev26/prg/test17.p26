@@ -1,4 +1,11 @@
-typ hax = {a : int}
-var id : (((((((int)))))))
-fun x() : void =
-	(1, 2, 3, 4)
+
+fun h(): void = none
+
+
+fun f(): void = h()
+
+
+
+fun main():int =
+    f(),
+	0

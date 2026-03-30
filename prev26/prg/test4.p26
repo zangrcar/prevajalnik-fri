@@ -1,4 +1,15 @@
-typ id = ^^^^^^^^^^^^^^void
-typ id2 = [1][2][4]bool
-typ randomid = id2
-var id3 : (a:[1][2][4]bool, b: ^^^^^^^^^^^^^^void, c: randomid, d : int, e : bool, f : char, g : { h : ^^int, i: void} )
+typ t1 = (i:int, n:^t2)
+typ t2 = (j:int, n:^t1)
+
+fun main() : int =
+	let
+		var t : t1
+		var s : t2
+		var r : t1
+	in
+		t.i = 0,
+		t.n = ^s,
+		s.j = 1,
+		"test",
+		0
+	end

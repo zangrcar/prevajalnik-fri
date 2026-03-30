@@ -1,4 +1,3 @@
-typ id = char
-typ t = (((id)))
-typ t2 = (id: (int))
-typ t3 = (((({a: int}))))
+// vzajemna rekurzija
+typ list = (first: int, rest:list)
+fun main () : int = 0

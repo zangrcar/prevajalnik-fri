@@ -1,1 +1,6 @@
-var rav : { a: {a: int}, b: (:{a: ( g : int)}:bool)}
+// ciklicne definicije
+typ a = b
+typ b = d
+typ c = a
+typ d = a
+fun main () : int = 0

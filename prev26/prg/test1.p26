@@ -1,1 +1,4 @@
-typ test = (a: int, b: char)
+// cikel
+typ a = b
+typ b = a
+fun main () : int = 0

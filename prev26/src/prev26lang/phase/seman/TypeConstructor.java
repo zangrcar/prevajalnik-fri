@@ -77,7 +77,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 		}
 
 		if (type instanceof TYP.PtrType ptrType) {
-			ensureAcyclic(ptrType.baseType, visiting, checked, blame);
+			// Recursive types through pointers are allowed.
 			return;
 		}
 
