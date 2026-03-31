@@ -10,6 +10,7 @@ import prev26lang.phase.lexan.*;
 import prev26lang.phase.synan.*;
 import prev26lang.phase.abstr.*;
 import prev26lang.phase.seman.*;
+import prev26lang.phase.memory.*;
 
 /**
  * The Prev26 compiler.
@@ -36,6 +37,7 @@ public class Compiler {
 			"synan", // --: syntax analysis
 			"abstr", // --: abstract syntax tree
 			"seman", // --: semantic analysis
+			"memory", // -: memory layout
 			"all" // -----: putting it all together
 	));
 
@@ -233,7 +235,20 @@ public class Compiler {
 					if (cmdLineOpts.get("--target-phase").equals("seman"))
 						break;
 
+
+					// === MEMORY LAYOUT ===
+					try (Memory memory = new Memory()) {
+						(new Layouter()).visit(Abstr.tree);
+						Memory.frameAttr.lock();
+						Memory.accessAttr.lock();
+						Memory.stringAttr.lock();
+						(new Memory.Logger(memory.xmlLogger)).visit(Abstr.tree);
+					}
+					if (cmdLineOpts.get("--target-phase").equals("memory"))
+						break;
+
 					break;
+					
 				}
 			}
 
