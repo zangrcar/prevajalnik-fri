@@ -1,11 +1,13 @@
 typ a = (c: char, a: int)
 typ b = (c: char, a: int)
+var i: int
 
 fun main(): int = 
 	let
 		var i : a
 		var j : b
 		var s : ^char
+		fun f(x: int): int = 1
 	in
 		i.a = 0,
 		j.a = 1,

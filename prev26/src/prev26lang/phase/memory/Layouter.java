@@ -178,8 +178,10 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      * Nested functions may also use named labels in this project.
      */
     private MEM.Label functionLabel(AST.FunDefn funDefn) {
-        return new MEM.Label(funDefn.name);
-    }
+		return (currentFun() == null)
+			? new MEM.Label(funDefn.name)
+			: new MEM.Label();
+	}
 
     // --------------------------------------------------------------------
     //  Semantic-type helpers
