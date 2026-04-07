@@ -519,13 +519,6 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
             size += slotSizeOf(requireExprType(argExpr));
         }
 
-        // Reserve result slot.
-        final TYP.Type funType = actualType(requireExprType(callExpr.funExpr));
-		if (!(funType instanceof TYP.FunType actualFunType))
-			throw new Report.InternalError();
-
-		size += slotSizeOf(actualFunType.resType);
-
         return align8(size);
     }
 
