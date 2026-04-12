@@ -1,21 +1,82 @@
-typ a = (c: char, a: int)
-typ b = (c: char, a: int)
-var i: int
+typ i = int
+typ c = char
+typ b = bool
+typ point = (x : int, y : char)
+typ bag = {n : int, ch : char}
+typ unary = (: int : int)
 
-fun main(): int = 
-	let
-		var i : a
-		var j : b
-		var s : ^char
-		fun f(x: int): int = 1
-	in
-		i.a = 0,
-		j.a = 1,
-		i.a+j.a,
-		"testni strings!",
-		"abc\x45",
-		s = "abc\x45\\\\\" cg",
-		f(9)
-	end
+var global_i : i
+var global_ch : c
+var global_b : b
+var global_p : ^i
+var global_point : point
+var global_bag : bag
+var global_fun : unary
 
-fun f(x: int): int = 5
+fun inc(x : int) : int =
+    x + 1
+
+fun twice(x : int) : int =
+    inc(inc(x))
+
+fun choose_inc() : unary =
+    inc
+
+fun keep_fun(f : unary) : unary =
+    f
+
+fun main() : int =
+    let
+        var a : i
+        var ch : c
+        var ok : b
+        var p : ^i
+        var arr : [4]int
+        var s : point
+        var u : bag
+        var f : unary
+
+        fun add_outer(x : int) : int =
+            x + a
+
+        fun use_outer_ptr() : int =
+            p^ + a
+    in
+        a = 10,
+        ch = '\x41',
+        ok = false,
+        p = ^a,
+        p^ = 20,
+        arr[0] = a,
+        arr[1] = p^,
+        arr[2] = sizeof [4]int,
+        s.x = arr[1],
+        s.y = ch,
+        u.n = s.x,
+        u.ch = '\x42',
+        a as char = u.ch,
+        ok = a as bool,
+        f = inc,
+        global_fun = twice,
+        global_fun = choose_inc(),
+        global_fun = keep_fun(inc),
+        ok = f == inc,
+        global_i = add_outer(3),
+        global_ch = u.ch,
+        global_b = ok,
+        global_p = p,
+        global_point.x = s.x,
+        global_point.y = s.y,
+        global_bag.n = u.n,
+        global_bag.ch = u.ch,
+        if ok then
+            a = add_outer(3)
+        else
+            a = twice(4)
+        end,
+        while a < 30 do
+            a = a + 1
+        end,
+        "debug\x20string",
+        add_outer(use_outer_ptr())
+    end

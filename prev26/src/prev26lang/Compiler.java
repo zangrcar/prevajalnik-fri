@@ -11,6 +11,7 @@ import prev26lang.phase.synan.*;
 import prev26lang.phase.abstr.*;
 import prev26lang.phase.seman.*;
 import prev26lang.phase.memory.*;
+import prev26lang.phase.imrgen.*;
 
 /**
  * The Prev26 compiler.
@@ -38,6 +39,7 @@ public class Compiler {
 			"abstr", // --: abstract syntax tree
 			"seman", // --: semantic analysis
 			"memory", // -: memory layout
+			"imrgen", // -: generation of intermediate representation
 			"all" // -----: putting it all together
 	));
 
@@ -246,6 +248,15 @@ public class Compiler {
 					}
 					if (cmdLineOpts.get("--target-phase").equals("memory"))
 						break;
+
+					// === GENERATION OF INTERMEDIATE REPRESENTATION ===
+					try (ImrGen imrGen = new ImrGen()) {
+						(new ImrGenerator()).visit(Abstr.tree);
+						(new ImrGen.Logger(imrGen.xmlLogger)).visit(Abstr.tree);
+					}
+					if (cmdLineOpts.get("--target-phase").equals("imrgen"))
+						break;
+
 
 					break;
 					

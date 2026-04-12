@@ -1,0 +1,24 @@
+typ unary = (: int : int)
+
+fun inc(x : int) : int =
+    x + 1
+
+fun choose_inc() : unary =
+    inc
+
+fun indirect_param(f : unary, x : int) : int =
+    f(x)
+
+fun indirect_local(x : int) : int =
+    let
+        var f : unary
+    in
+        f = inc,
+        f(x)
+    end
+
+fun indirect_result(x : int) : int =
+    choose_inc()(x)
+
+fun main() : int =
+    indirect_param(inc, 10)
