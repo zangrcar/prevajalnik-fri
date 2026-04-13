@@ -1,0 +1,15 @@
+var i: int
+typ a = void
+typ b = ^a
+
+fun main(): int = 
+	i = 1,
+	while j() do none end,
+	0
+
+fun g(): void = 
+	i = i + 1
+
+fun j(): bool = 
+	g(),
+	i < 10

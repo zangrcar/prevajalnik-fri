@@ -485,7 +485,8 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     @Override
     public Object visit(AST.PtrType ptrType, Object arg) {
         ptrType.baseType.accept(this, arg);
-		requireNonVoid(ptrType.baseType, requireType(ptrType.baseType));
+		if (requireType(ptrType.baseType) instanceof TYP.VoidType)
+			throw new Report.Error(ptrType.baseType, "Expected type not void.");
         return null;
     }
 
