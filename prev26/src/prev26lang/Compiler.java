@@ -12,6 +12,7 @@ import prev26lang.phase.abstr.*;
 import prev26lang.phase.seman.*;
 import prev26lang.phase.memory.*;
 import prev26lang.phase.imrgen.*;
+import prev26lang.phase.imrlin.*;
 
 /**
  * The Prev26 compiler.
@@ -40,6 +41,7 @@ public class Compiler {
 			"seman", // --: semantic analysis
 			"memory", // -: memory layout
 			"imrgen", // -: generation of intermediate representation
+			"imrlin", // -: linearization of intermediate representation
 			"all" // -----: putting it all together
 	));
 

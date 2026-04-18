@@ -9,7 +9,7 @@ FIND		= 'find'
 
 bin	:
 	if [ -d src ] ; then $(MAKE) -C src ; fi
-	$(JAVAC) --module-path $(ANTLRDIR) --source-path src -d bin src/prev26lang/Compiler.java
+	$(JAVAC) --module-path $(ANTLRDIR) -d bin $$(find src -path '*/.antlr/*' -prune -o -name '*.java' -print)
 	@echo ":-) OK"
 
 doc	:
