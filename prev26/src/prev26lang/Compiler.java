@@ -259,6 +259,28 @@ public class Compiler {
 					if (cmdLineOpts.get("--target-phase").equals("imrgen"))
 						break;
 
+					// === LINEARIZATION OF INTERMEDIATE REPRESENTATION ===
+					try (ImrLin imrLin = new ImrLin()) {
+						ImrLinearizer linearizer = new ImrLinearizer();
+						linearizer.visit(Abstr.tree);
+						Vector<LIN.DataChunk> dataChunks = linearizer.dataChunks();
+						Vector<LIN.CodeChunk> codeChunks = linearizer.codeChunks();
+						System.out.printf("IMRLIN: data chunks=%d, code chunks=%d%n", dataChunks.size(), codeChunks.size());
+						for (final LIN.CodeChunk codeChunk : codeChunks) {
+							System.out.printf("IMRLIN: function %s entry=%s exit=%s%n", codeChunk.frame.label.name,
+									codeChunk.entryLabel.name, codeChunk.exitLabel.name);
+							for (final IMR.Stmt stmt : codeChunk.stmts())
+								System.out.println("  " + stmt);
+						}
+						Interpreter interpreter = new Interpreter(dataChunks, codeChunks);
+						if (codeChunks.isEmpty())
+							System.out.println("IMRLIN: interpreter execution skipped because no code chunks were generated.");
+						else
+							System.out.printf("IMRLIN: program returned %d%n", interpreter.run("_main"));
+					}
+					if (cmdLineOpts.get("--target-phase").equals("imrlin"))
+						break;
+
 
 					break;
 					
