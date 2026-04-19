@@ -1,0 +1,110 @@
+fun getint() : int
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+var n : int
+var i : int
+var j : int
+var tmp : int
+var arr : [100]int
+var prompt_i : int
+var length_prompt : [24]char
+var array_prompt : [17]char
+
+fun init_prompts() : void =
+    length_prompt[0] = 'I',
+    length_prompt[1] = 'n',
+    length_prompt[2] = 'p',
+    length_prompt[3] = 'u',
+    length_prompt[4] = 't',
+    length_prompt[5] = '\x20',
+    length_prompt[6] = 't',
+    length_prompt[7] = 'h',
+    length_prompt[8] = 'e',
+    length_prompt[9] = '\x20',
+    length_prompt[10] = 'a',
+    length_prompt[11] = 'r',
+    length_prompt[12] = 'r',
+    length_prompt[13] = 'a',
+    length_prompt[14] = 'y',
+    length_prompt[15] = '\x20',
+    length_prompt[16] = 'l',
+    length_prompt[17] = 'e',
+    length_prompt[18] = 'n',
+    length_prompt[19] = 'g',
+    length_prompt[20] = 't',
+    length_prompt[21] = 'h',
+    length_prompt[22] = ':',
+    length_prompt[23] = '\x20',
+
+    array_prompt[0] = 'I',
+    array_prompt[1] = 'n',
+    array_prompt[2] = 'p',
+    array_prompt[3] = 'u',
+    array_prompt[4] = 't',
+    array_prompt[5] = '\x20',
+    array_prompt[6] = 't',
+    array_prompt[7] = 'h',
+    array_prompt[8] = 'e',
+    array_prompt[9] = '\x20',
+    array_prompt[10] = 'a',
+    array_prompt[11] = 'r',
+    array_prompt[12] = 'r',
+    array_prompt[13] = 'a',
+    array_prompt[14] = 'y',
+    array_prompt[15] = ':',
+    array_prompt[16] = '\x20'
+
+fun print_length_prompt() : void =
+    prompt_i = 0,
+    while prompt_i < 24 do
+        putchar(length_prompt[prompt_i]),
+        prompt_i = prompt_i + 1
+    end
+
+fun print_array_prompt() : void =
+    prompt_i = 0,
+    while prompt_i < 17 do
+        putchar(array_prompt[prompt_i]),
+        prompt_i = prompt_i + 1
+    end
+
+fun main() : int =
+    init_prompts(),
+    print_length_prompt(),
+    n = getint(),
+    putchar('\x0A'),
+
+    print_array_prompt(),
+    i = 0,
+    while i < n do
+        arr[i] = getint(),
+        i = i + 1
+    end,
+    putchar('\x0A'),
+
+    i = 0,
+    while i < n do
+        j = 0,
+        while j < n - i - 1 do
+            if arr[j] > arr[j + 1] then
+                tmp = arr[j],
+                arr[j] = arr[j + 1],
+                arr[j + 1] = tmp
+            end,
+            j = j + 1
+        end,
+        i = i + 1
+    end,
+
+    i = 0,
+    while i < n do
+        putint(arr[i]),
+        if i < n - 1 then
+            putchar('\x20')
+        end,
+        i = i + 1
+    end,
+    putchar('\x0A'),
+
+    0
