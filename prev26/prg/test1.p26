@@ -1,4 +1,22 @@
-// cikel
-typ a = b
-typ b = a
-fun main () : int = 0
+fun getint() : int
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+var p: ^char
+
+fun main () : int = 
+	p = "testni string",
+	let
+		var n: int
+		var a: char
+	in
+		n = 0,
+		while (n < 13) do
+			a = (((p as int) + n) as ^char)^,
+			n = n+1,
+			putchar(a)
+		end,
+		putchar('\x0A')
+	end,
+	0
+

@@ -69,11 +69,8 @@ public class Interpreter {
 			}
 			this.dataMemLabels.put(dataChunk.label, tempLD(HP, false));
 			this.dataMemLabelsByName.put(dataChunk.label.name, tempLD(HP, false));
-			if (dataChunk.init != null) {
-				for (int c = 0; c < dataChunk.init.length() - 2; c++)
-					memST(tempLD(HP, false) + 8 * c, (long) dataChunk.init.charAt(c + 1), false);
-				memST(tempLD(HP, false) + 8 * (dataChunk.init.length() - 2), 0L, false);
-			}
+			if (dataChunk.init != null)
+				storeStringLiteral(dataChunk);
 			tempST(HP, tempLD(HP, false) + dataChunk.size, debug);
 		}
 		if (debug)
@@ -96,6 +93,69 @@ public class Interpreter {
 					jumpMemLabels.put(((IMR.LABEL) stmts.get(stmtOffset)).label, stmtOffset);
 			}
 		}
+	}
+
+	/**
+	 * Stores a string literal as consecutive bytes.
+	 */
+	private void storeStringLiteral(LIN.DataChunk dataChunk) {
+		final String init = dataChunk.init;
+
+		if (init == null || init.length() < 2)
+			throw new Report.InternalError();
+		if (init.charAt(0) != '"' || init.charAt(init.length() - 1) != '"')
+			throw new Report.InternalError();
+
+		long offset = 0;
+		int i = 1;
+		final int end = init.length() - 1;
+
+		while (i < end) {
+			final char c = init.charAt(i);
+			if (c != '\\') {
+				memST1(tempLD(HP, false) + offset, (long) c, false);
+				offset++;
+				i++;
+				continue;
+			}
+
+			if (i + 1 >= end)
+				throw new Report.InternalError();
+
+			final char esc = init.charAt(i + 1);
+			switch (esc) {
+			case '"', '\\' -> {
+				memST1(tempLD(HP, false) + offset, (long) esc, false);
+				offset++;
+				i += 2;
+			}
+			case 'x' -> {
+				if (i + 3 >= end)
+					throw new Report.InternalError();
+				final int value = hexValue(init.charAt(i + 2)) * 16 + hexValue(init.charAt(i + 3));
+				memST1(tempLD(HP, false) + offset, (long) value, false);
+				offset++;
+				i += 4;
+			}
+			default -> throw new Report.InternalError();
+			}
+		}
+
+		if (offset != dataChunk.size)
+			throw new Report.InternalError();
+	}
+
+	/**
+	 * Converts one hexadecimal digit to its numeric value.
+	 */
+	private int hexValue(final char c) {
+		if ('0' <= c && c <= '9')
+			return c - '0';
+		if ('A' <= c && c <= 'F')
+			return 10 + c - 'A';
+		if ('a' <= c && c <= 'f')
+			return 10 + c - 'a';
+		throw new Report.InternalError();
 	}
 
 	private Long codeAddress(MEM.Label label) {
