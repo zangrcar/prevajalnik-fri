@@ -32,6 +32,11 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 		return new Vector<LIN.CodeChunk>(codeChunks);
 	}
 
+	/** Returns a defensive copy of all data labels. */
+	public HashSet<String> dataLabels() {
+		return new HashSet<String>(dataLabels);
+	}
+
 	/** Stores statements that must be executed before a canonical expression. */
 	private static class CanonExpr {
 		public final Vector<IMR.Stmt> stmts;

@@ -13,6 +13,7 @@ import prev26lang.phase.seman.*;
 import prev26lang.phase.memory.*;
 import prev26lang.phase.imrgen.*;
 import prev26lang.phase.imrlin.*;
+import prev26lang.phase.asmgen.*;
 
 /**
  * The Prev26 compiler.
@@ -42,6 +43,7 @@ public class Compiler {
 			"memory", // -: memory layout
 			"imrgen", // -: generation of intermediate representation
 			"imrlin", // -: linearization of intermediate representation
+			"asmgen", // -: generation of assembly code
 			"all" // -----: putting it all together
 	));
 
@@ -259,28 +261,46 @@ public class Compiler {
 					if (cmdLineOpts.get("--target-phase").equals("imrgen"))
 						break;
 
+					Vector<LIN.DataChunk> dataChunks = null;
+					Vector<LIN.CodeChunk> linCodeChunks = null;
+
 					// === LINEARIZATION OF INTERMEDIATE REPRESENTATION ===
 					try (ImrLin imrLin = new ImrLin()) {
 						ImrLinearizer linearizer = new ImrLinearizer();
 						linearizer.visit(Abstr.tree);
-						Vector<LIN.DataChunk> dataChunks = linearizer.dataChunks();
-						Vector<LIN.CodeChunk> codeChunks = linearizer.codeChunks();
-						System.out.printf("IMRLIN: data chunks=%d, code chunks=%d%n", dataChunks.size(), codeChunks.size());
-						for (final LIN.CodeChunk codeChunk : codeChunks) {
+						dataChunks = linearizer.dataChunks();
+						linCodeChunks = linearizer.codeChunks();
+					}
+					if (cmdLineOpts.get("--target-phase").equals("imrlin")) {
+						System.out.printf("IMRLIN: data chunks=%d, code chunks=%d%n", dataChunks.size(), linCodeChunks.size());
+						for (final LIN.CodeChunk codeChunk : linCodeChunks) {
 							System.out.printf("IMRLIN: function %s entry=%s exit=%s%n", codeChunk.frame.label.name,
-									codeChunk.entryLabel.name, codeChunk.exitLabel.name);
+							codeChunk.entryLabel.name, codeChunk.exitLabel.name);
 							for (final IMR.Stmt stmt : codeChunk.stmts())
 								System.out.println("  " + stmt);
-						}
-						Interpreter interpreter = new Interpreter(dataChunks, codeChunks);
-						if (codeChunks.isEmpty())
+							}
+						Interpreter interpreter = new Interpreter(dataChunks, linCodeChunks);
+						if (linCodeChunks.isEmpty())
 							System.out.println("IMRLIN: interpreter execution skipped because no code chunks were generated.");
 						else
 							System.out.printf("IMRLIN: program returned %d%n", interpreter.run("_main"));
-					}
-					if (cmdLineOpts.get("--target-phase").equals("imrlin"))
 						break;
+					}
 
+					// === GENERATION OF ASSEMBLY CODE ===
+					AsmGenerator asmGenerator = new AsmGenerator();
+					try (AsmGen asmgen = new AsmGen()) {
+						asmGenerator.generate(dataChunks, linCodeChunks);
+					}
+					if (cmdLineOpts.get("--target-phase").equals("asmgen")) {
+						System.out.printf("ASMGEN: data chunks=%d, code chunks=%d%n", asmGenerator.dataChunks().size(), asmGenerator.codeChunks().size());
+						for (final ASM.CodeChunk codeChunk : asmGenerator.codeChunks()) {
+							System.out.printf("ASMGEN: function %s%n", codeChunk.frame.label.name);
+							for (final ASM.Instruction instruction : codeChunk.instructions())
+								System.out.println("  " + instruction.format());
+						}
+						break;
+					}
 
 					break;
 					

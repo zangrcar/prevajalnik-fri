@@ -1,4 +1,4 @@
-package prev26lang.phase.imrlin;
+package prev26lang.phase.asmgen;
 
 
 import prev26lang.common.logger.*;
@@ -6,14 +6,14 @@ import prev26lang.phase.*;
 import prev26lang.phase.memory.*;
 
 /**
- * Intermediate representation linarization phase.
+ * Assembly code generation phase.
  */
-public class ImrLin extends Phase {
+public class AsmGen extends Phase {
 	/**
 	 * Phase construction.
 	 */
-	public ImrLin() {
-		super("imrlin");
+	public AsmGen() {
+		super("asmgen");
 	}
 
 	// ===== LOGGER =====
