@@ -17,80 +17,44 @@ public class ASM {
 		/** Alignment directive emitted by this chunk, or 0 if this is not one. */
 		private final long alignment;
 
-		/** The label where data is placed. */
+		/** The label where data is placed, or null for an alignment directive. */
 		public final MEM.Label label;
 
 		/** The size of data in bytes. */
 		public final long size;
 
-		/** The initialized bytes, or an empty vector for uninitialized data. */
+		/** The initialized bytes, or an empty vector for zero-initialized storage. */
 		private final Vector<Long> bytes;
-
-		/** True if this data chunk has an explicit initializer. */
-		private final boolean initialized;
-
-		/** True if this chunk is only an assembler alignment directive. */
-		private final boolean alignDirective;
 
 		/**
 		 * Constructs an alignment directive chunk.
 		 */
 		public DataChunk(final long alignment) {
-			this(alignment, null, 0, new Vector<Long>(), false, true);
+			this(alignment, null, 0, new Vector<Long>());
 		}
 
 		/**
 		 * Constructs an uninitialized data chunk.
 		 */
 		public DataChunk(final MEM.Label label, final long size) {
-			this(0, label, size, new Vector<Long>(), false, false);
+			this(0, label, size, new Vector<Long>());
 		}
 
 		/**
 		 * Constructs an initialized data chunk.
 		 */
 		public DataChunk(final MEM.Label label, final long size, final Vector<Long> bytes) {
-			this(0, label, size, bytes, true, false);
+			this(0, label, size, bytes);
 		}
 
 		/**
 		 * Constructs a data chunk.
 		 */
-		private DataChunk(
-			final long alignment,
-			final MEM.Label label,
-			final long size,
-			final Vector<Long> bytes,
-			final boolean initialized,
-			final boolean alignDirective
-		) {
+		private DataChunk(final long alignment, final MEM.Label label, final long size, final Vector<Long> bytes) {
 			this.alignment = alignment;
 			this.label = label;
 			this.size = size;
 			this.bytes = new Vector<Long>(bytes);
-			this.initialized = initialized;
-			this.alignDirective = alignDirective;
-		}
-
-		/**
-		 * Returns true if this data chunk has explicit initial byte values.
-		 */
-		public boolean isInitialized() {
-			return initialized;
-		}
-
-		/**
-		 * Returns a defensive copy of initialized bytes.
-		 */
-		public Vector<Long> bytes() {
-			return new Vector<Long>(bytes);
-		}
-
-		/**
-		 * Returns true if this chunk is only an alignment directive.
-		 */
-		public boolean isAlignDirective() {
-			return alignDirective;
 		}
 
 		/**
@@ -98,19 +62,16 @@ public class ASM {
 		 */
 		public Vector<String> format() {
 			final Vector<String> lines = new Vector<String>();
-			if (alignDirective) {
+			if (label == null) {
 				lines.add(".balign " + alignment);
 				return lines;
 			}
 			lines.add(label.name + ":");
 
-			if (!isInitialized()) {
+			if (bytes.isEmpty()) {
 				lines.add("  .zero " + size);
 				return lines;
 			}
-
-			if (bytes.isEmpty())
-				return lines;
 
 			final StringBuilder line = new StringBuilder("  .byte ");
 			for (int i = 0; i < bytes.size(); i++) {
