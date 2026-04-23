@@ -1,7 +1,13 @@
 fun main () : int =
+	s = "tes",
 	a = 0,
 	while a < 10 do
 		a = a + 1
 	end,
 	0
+var d: {c: int, d: char}
+var c: [17]int
+var b: [13]bool
+var bb: bool
 var a : int
+var s: ^char

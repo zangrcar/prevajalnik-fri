@@ -14,6 +14,9 @@ public class ASM {
 	 */
 	public static class DataChunk {
 
+		/** Alignment directive emitted by this chunk, or 0 if this is not one. */
+		private final long alignment;
+
 		/** The label where data is placed. */
 		public final MEM.Label label;
 
@@ -26,28 +29,47 @@ public class ASM {
 		/** True if this data chunk has an explicit initializer. */
 		private final boolean initialized;
 
+		/** True if this chunk is only an assembler alignment directive. */
+		private final boolean alignDirective;
+
+		/**
+		 * Constructs an alignment directive chunk.
+		 */
+		public DataChunk(final long alignment) {
+			this(alignment, null, 0, new Vector<Long>(), false, true);
+		}
+
 		/**
 		 * Constructs an uninitialized data chunk.
 		 */
 		public DataChunk(final MEM.Label label, final long size) {
-			this(label, size, new Vector<Long>(), false);
+			this(0, label, size, new Vector<Long>(), false, false);
 		}
 
 		/**
 		 * Constructs an initialized data chunk.
 		 */
 		public DataChunk(final MEM.Label label, final long size, final Vector<Long> bytes) {
-			this(label, size, bytes, true);
+			this(0, label, size, bytes, true, false);
 		}
 
 		/**
 		 * Constructs a data chunk.
 		 */
-		private DataChunk(final MEM.Label label, final long size, final Vector<Long> bytes, final boolean initialized) {
+		private DataChunk(
+			final long alignment,
+			final MEM.Label label,
+			final long size,
+			final Vector<Long> bytes,
+			final boolean initialized,
+			final boolean alignDirective
+		) {
+			this.alignment = alignment;
 			this.label = label;
 			this.size = size;
 			this.bytes = new Vector<Long>(bytes);
 			this.initialized = initialized;
+			this.alignDirective = alignDirective;
 		}
 
 		/**
@@ -65,10 +87,21 @@ public class ASM {
 		}
 
 		/**
+		 * Returns true if this chunk is only an alignment directive.
+		 */
+		public boolean isAlignDirective() {
+			return alignDirective;
+		}
+
+		/**
 		 * Formats this data chunk as assembler directives.
 		 */
 		public Vector<String> format() {
 			final Vector<String> lines = new Vector<String>();
+			if (alignDirective) {
+				lines.add(".balign " + alignment);
+				return lines;
+			}
 			lines.add(label.name + ":");
 
 			if (!isInitialized()) {

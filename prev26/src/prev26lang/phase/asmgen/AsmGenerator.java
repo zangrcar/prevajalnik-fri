@@ -33,8 +33,11 @@ public class AsmGenerator {
 		this.dataChunks.clear();
 		this.codeChunks.clear();
 
-		for (final LIN.DataChunk dataChunk : dataChunks)
+		for (final LIN.DataChunk dataChunk : dataChunks) {
 			this.dataChunks.add(generate(dataChunk));
+			if (dataChunk.init != null)
+				this.dataChunks.add(new ASM.DataChunk(8));
+		}
 
 		for (final LIN.CodeChunk codeChunk : codeChunks)
 			this.codeChunks.add(generate(codeChunk));
