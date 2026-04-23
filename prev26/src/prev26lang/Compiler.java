@@ -294,8 +294,17 @@ public class Compiler {
 					}
 					if (cmdLineOpts.get("--target-phase").equals("asmgen")) {
 						System.out.printf("ASMGEN: data chunks=%d, code chunks=%d%n", asmGenerator.dataChunks().size(), asmGenerator.codeChunks().size());
+						if (!asmGenerator.dataChunks().isEmpty()) {
+							System.out.println("ASMGEN: .data");
+							for (final ASM.DataChunk dataChunk : asmGenerator.dataChunks())
+								for (final String line : dataChunk.format())
+									System.out.println("  " + line);
+						}
+						System.out.println("ASMGEN: .text");
 						for (final ASM.CodeChunk codeChunk : asmGenerator.codeChunks()) {
 							System.out.printf("ASMGEN: function %s%n", codeChunk.frame.label.name);
+							System.out.printf("  %-32s %-18s %-18s %-18s %-5s%n",
+								"INSTRUCTION", "INPUT", "OUTPUT", "LABELS", "MOVE");
 							for (final ASM.Instruction instruction : codeChunk.instructions())
 								System.out.println("  " + instruction.format());
 						}

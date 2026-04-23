@@ -12,8 +12,8 @@ import prev26lang.phase.memory.*;
  */
 public class AsmGenerator {
 
-	/** Data chunks copied from linearized intermediate code. */
-	private final Vector<LIN.DataChunk> dataChunks;
+	/** Generated assembly data chunks. */
+	private final Vector<ASM.DataChunk> dataChunks;
 
 	/** Generated assembly code chunks. */
 	private final Vector<ASM.CodeChunk> codeChunks;
@@ -22,7 +22,7 @@ public class AsmGenerator {
 	private Vector<ASM.Instruction> instructions;
 
 	public AsmGenerator() {
-		dataChunks = new Vector<LIN.DataChunk>();
+		dataChunks = new Vector<ASM.DataChunk>();
 		codeChunks = new Vector<ASM.CodeChunk>();
 	}
 
@@ -32,7 +32,9 @@ public class AsmGenerator {
 	public void generate(final Vector<LIN.DataChunk> dataChunks, final Vector<LIN.CodeChunk> codeChunks) {
 		this.dataChunks.clear();
 		this.codeChunks.clear();
-		this.dataChunks.addAll(dataChunks);
+
+		for (final LIN.DataChunk dataChunk : dataChunks)
+			this.dataChunks.add(generate(dataChunk));
 
 		for (final LIN.CodeChunk codeChunk : codeChunks)
 			this.codeChunks.add(generate(codeChunk));
@@ -41,8 +43,77 @@ public class AsmGenerator {
 	/**
 	 * Returns a defensive copy of all data chunks.
 	 */
-	public Vector<LIN.DataChunk> dataChunks() {
-		return new Vector<LIN.DataChunk>(dataChunks);
+	public Vector<ASM.DataChunk> dataChunks() {
+		return new Vector<ASM.DataChunk>(dataChunks);
+	}
+
+	/**
+	 * Generates an assembly data chunk.
+	 */
+	private ASM.DataChunk generate(final LIN.DataChunk dataChunk) {
+		if (dataChunk.init == null)
+			return new ASM.DataChunk(dataChunk.label, dataChunk.size);
+
+		final Vector<Long> bytes = decodeString(dataChunk.init);
+		if (bytes.size() != dataChunk.size)
+			throw new Report.InternalError();
+		return new ASM.DataChunk(dataChunk.label, dataChunk.size, bytes);
+	}
+
+	/**
+	 * Decodes a string literal into bytes.
+	 */
+	private Vector<Long> decodeString(final String init) {
+		if (init == null || init.length() < 2)
+			throw new Report.InternalError();
+		if (init.charAt(0) != '"' || init.charAt(init.length() - 1) != '"')
+			throw new Report.InternalError();
+
+		final Vector<Long> bytes = new Vector<Long>();
+		int i = 1;
+		final int end = init.length() - 1;
+
+		while (i < end) {
+			final char c = init.charAt(i);
+			if (c != '\\') {
+				bytes.add((long) c);
+				i++;
+				continue;
+			}
+
+			if (i + 1 >= end)
+				throw new Report.InternalError();
+
+			final char esc = init.charAt(i + 1);
+			switch (esc) {
+			case '"', '\\' -> {
+				bytes.add((long) esc);
+				i += 2;
+			}
+			case 'x' -> {
+				if (i + 3 >= end)
+					throw new Report.InternalError();
+				bytes.add((long) (hexValue(init.charAt(i + 2)) * 16 + hexValue(init.charAt(i + 3))));
+				i += 4;
+			}
+			default -> throw new Report.InternalError();
+			}
+		}
+
+		return bytes;
+	}
+
+	/**
+	 * Converts one hexadecimal digit to its numeric value.
+	 */
+	private int hexValue(final char c) {
+		if ('0' <= c && c <= '9')
+			return c - '0';
+		if ('A' <= c && c <= 'F')
+			return 10 + c - 'A';
+		if ('a' <= c && c <= 'f')
+			return 10 + c - 'a';
+		throw new Report.InternalError();
 	}
 
 	/**
@@ -87,8 +158,12 @@ public class AsmGenerator {
 	/**
 	 * Emits one non-move instruction into the current function body.
 	 */
-	private void emit(final String instruction, final Vector<MEM.Temp> output, final Vector<MEM.Temp> input,
-			final Vector<MEM.Label> label) {
+	private void emit(
+		final String instruction, 
+		final Vector<MEM.Temp> output, 
+		final Vector<MEM.Temp> input,
+		final Vector<MEM.Label> label
+	) {
 		emit(new ASM.Instruction(instruction, output, input, label));
 	}
 

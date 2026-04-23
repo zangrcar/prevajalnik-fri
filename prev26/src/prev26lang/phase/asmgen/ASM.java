@@ -10,6 +10,87 @@ import prev26lang.phase.memory.*;
 public class ASM {
 
 	/**
+	 * A chunk of static data.
+	 */
+	public static class DataChunk {
+
+		/** The label where data is placed. */
+		public final MEM.Label label;
+
+		/** The size of data in bytes. */
+		public final long size;
+
+		/** The initialized bytes, or an empty vector for uninitialized data. */
+		private final Vector<Long> bytes;
+
+		/** True if this data chunk has an explicit initializer. */
+		private final boolean initialized;
+
+		/**
+		 * Constructs an uninitialized data chunk.
+		 */
+		public DataChunk(final MEM.Label label, final long size) {
+			this(label, size, new Vector<Long>(), false);
+		}
+
+		/**
+		 * Constructs an initialized data chunk.
+		 */
+		public DataChunk(final MEM.Label label, final long size, final Vector<Long> bytes) {
+			this(label, size, bytes, true);
+		}
+
+		/**
+		 * Constructs a data chunk.
+		 */
+		private DataChunk(final MEM.Label label, final long size, final Vector<Long> bytes, final boolean initialized) {
+			this.label = label;
+			this.size = size;
+			this.bytes = new Vector<Long>(bytes);
+			this.initialized = initialized;
+		}
+
+		/**
+		 * Returns true if this data chunk has explicit initial byte values.
+		 */
+		public boolean isInitialized() {
+			return initialized;
+		}
+
+		/**
+		 * Returns a defensive copy of initialized bytes.
+		 */
+		public Vector<Long> bytes() {
+			return new Vector<Long>(bytes);
+		}
+
+		/**
+		 * Formats this data chunk as assembler directives.
+		 */
+		public Vector<String> format() {
+			final Vector<String> lines = new Vector<String>();
+			lines.add(label.name + ":");
+
+			if (!isInitialized()) {
+				lines.add("  .zero " + size);
+				return lines;
+			}
+
+			if (bytes.isEmpty())
+				return lines;
+
+			final StringBuilder line = new StringBuilder("  .byte ");
+			for (int i = 0; i < bytes.size(); i++) {
+				if (i > 0)
+					line.append(", ");
+				line.append(bytes.get(i));
+			}
+			lines.add(line.toString());
+			return lines;
+		}
+	}
+
+	/**
 	 * A chunk of assembly code belonging to one function.
 	 */
 	public static class CodeChunk {
@@ -107,6 +188,21 @@ public class ASM {
 		 * Formats this instruction with temporary names.
 		 */
 		public String format() {
+			final String renderedInstruction = renderInstruction();
+			return String.format(
+				"%-32s %-18s %-18s %-18s %-5s",
+				renderedInstruction,
+				formatTemps(input),
+				formatTemps(output),
+				formatLabels(label),
+				Boolean.toString(isMove)
+			);
+		}
+
+		/**
+		 * Renders the instruction itself with placeholders resolved.
+		 */
+		private String renderInstruction() {
 			final StringBuilder formatted = new StringBuilder();
 
 			for (int i = 0; i < instruction.length(); i++) {
@@ -134,6 +230,34 @@ public class ASM {
 				i = j - 1;
 			}
 
+			return formatted.toString();
+		}
+
+		/**
+		 * Formats a temporary list as one set.
+		 */
+		private String formatTemps(final Vector<MEM.Temp> temps) {
+			final StringBuilder formatted = new StringBuilder("{");
+			for (int i = 0; i < temps.size(); i++) {
+				if (i > 0)
+					formatted.append(", ");
+				formatted.append(temps.get(i));
+			}
+			formatted.append("}");
+			return formatted.toString();
+		}
+
+		/**
+		 * Formats a label list as one set.
+		 */
+		private String formatLabels(final Vector<MEM.Label> labels) {
+			final StringBuilder formatted = new StringBuilder("{");
+			for (int i = 0; i < labels.size(); i++) {
+				if (i > 0)
+					formatted.append(", ");
+				formatted.append(labels.get(i).name);
+			}
+			formatted.append("}");
 			return formatted.toString();
 		}
 
