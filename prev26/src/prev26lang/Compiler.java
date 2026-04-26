@@ -303,8 +303,8 @@ public class Compiler {
 							System.out.println("ASMGEN: .text");
 						for (final ASM.CodeChunk codeChunk : asmGenerator.codeChunks()) {
 							System.out.printf("ASMGEN: function %s%n", codeChunk.frame.label.name);
-							System.out.printf("  %-32s %-18s %-18s %-18s %-5s%n",
-								"INSTRUCTION", "INPUT", "OUTPUT", "LABELS", "MOVE");
+							System.out.printf("  %-32s %-18s %-18s %-18s %-18s %-5s%n",
+								"INSTRUCTION", "INPUT", "OUTPUT", "LABELS", "JUMPS", "MOVE");
 							for (final ASM.Instruction instruction : codeChunk.instructions())
 								System.out.println("  " + instruction.format());
 						}

@@ -171,6 +171,20 @@ public class AsmGenerator {
 	}
 
 	/**
+	 * Emits one non-move instruction with explicit jump targets into the current
+	 * function body.
+	 */
+	private void emit(
+		final String instruction, 
+		final Vector<MEM.Temp> output, 
+		final Vector<MEM.Temp> input,
+		final Vector<MEM.Label> label,
+		final Vector<MEM.Label> jumpTargets
+	) {
+		emit(new ASM.Instruction(instruction, output, input, label, jumpTargets));
+	}
+
+	/**
 	 * Emits one instruction into the current function body.
 	 */
 	private void emit(final ASM.Instruction instruction) {
@@ -258,7 +272,7 @@ public class AsmGenerator {
 	 */
 	private void munchJump(final IMR.JUMP jump) {
 		if (jump.addr instanceof IMR.NAME name) {
-			emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(name.label));
+			emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(name.label), labels(name.label));
 			return;
 		}
 
@@ -274,8 +288,8 @@ public class AsmGenerator {
 		final MEM.Label posLabel = labelOf(cjump.posAddr);
 		final MEM.Label negLabel = labelOf(cjump.negAddr);
 
-		emit("BNE *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel, negLabel));
-		emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(negLabel));
+		emit("BNE *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel), labels(posLabel, negLabel));
+		emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(negLabel), labels(negLabel));
 	}
 
 	/**
@@ -471,7 +485,7 @@ public class AsmGenerator {
 		}
 
 		if (call.addr instanceof IMR.NAME name)
-			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label));
+			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), labels(name.label));
 		else {
 			final MEM.Temp addr = munchExpr(call.addr);
 			emit("JALR *d0, 0(*s0)", temps(MEM.RA), temps(addr), new Vector<MEM.Label>());

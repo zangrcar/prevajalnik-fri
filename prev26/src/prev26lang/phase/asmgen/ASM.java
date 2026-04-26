@@ -128,8 +128,11 @@ public class ASM {
 		/** Temporaries defined by this instruction. */
 		public final Vector<MEM.Temp> output;
 
-		/** Labels this instruction can jump to. */
+		/** Labels used as operands in this instruction's template. */
 		public final Vector<MEM.Label> label;
+
+		/** Labels this instruction can jump to. */
+		public final Vector<MEM.Label> jumpTargets;
 
 		/** True if this instruction only copies one temporary to another. */
 		public final boolean isMove;
@@ -142,13 +145,27 @@ public class ASM {
 			final Vector<MEM.Temp> output,
 			final Vector<MEM.Temp> input,
 			final Vector<MEM.Label> label,
+			final Vector<MEM.Label> jumpTargets,
 			final boolean isMove
 		) {
 			this.instruction = instruction;
 			this.output = new Vector<MEM.Temp>(output);
 			this.input = new Vector<MEM.Temp>(input);
 			this.label = new Vector<MEM.Label>(label);
+			this.jumpTargets = new Vector<MEM.Label>(jumpTargets);
 			this.isMove = isMove;
+		}
+
+		/**
+		 * Constructs a non-move instruction with no jump targets.
+		 */
+		public Instruction(
+			final String instruction,
+			final Vector<MEM.Temp> output,
+			final Vector<MEM.Temp> input,
+			final Vector<MEM.Label> label
+		) {
+			this(instruction, output, input, label, new Vector<MEM.Label>(), false);
 		}
 
 		/**
@@ -158,9 +175,10 @@ public class ASM {
 			final String instruction,
 			final Vector<MEM.Temp> output,
 			final Vector<MEM.Temp> input,
-			final Vector<MEM.Label> label
+			final Vector<MEM.Label> label,
+			final Vector<MEM.Label> jumpTargets
 		) {
-			this(instruction, output, input, label, false);
+			this(instruction, output, input, label, jumpTargets, false);
 		}
 
 		/** Returns a defensive copy of the used temporaries. */
@@ -173,9 +191,14 @@ public class ASM {
 			return new Vector<MEM.Temp>(output);
 		}
 
-		/** Returns a defensive copy of the possible jump labels. */
+		/** Returns a defensive copy of the operand labels. */
 		public Vector<MEM.Label> labels() {
 			return new Vector<MEM.Label>(label);
+		}
+
+		/** Returns a defensive copy of the possible jump labels. */
+		public Vector<MEM.Label> jumpTargets() {
+			return new Vector<MEM.Label>(jumpTargets);
 		}
 
 		/**
@@ -184,11 +207,12 @@ public class ASM {
 		public String format() {
 			final String renderedInstruction = renderInstruction();
 			return String.format(
-				"%-32s %-18s %-18s %-18s %-5s",
+				"%-32s %-18s %-18s %-18s %-18s %-5s",
 				renderedInstruction,
 				formatTemps(input),
 				formatTemps(output),
 				formatLabels(label),
+				formatLabels(jumpTargets),
 				Boolean.toString(isMove)
 			);
 		}
@@ -301,7 +325,7 @@ public class ASM {
 		final Vector<MEM.Temp> input,
 		final Vector<MEM.Label> label
 	) {
-		return new Instruction(instruction, output, input, label, false);
+		return new Instruction(instruction, output, input, label);
 	}
 
 	/**
@@ -312,7 +336,7 @@ public class ASM {
 		final Vector<MEM.Temp> input = new Vector<MEM.Temp>();
 		output.add(dst);
 		input.add(src);
-		return new Instruction(instruction, output, input, new Vector<MEM.Label>(), true);
+		return new Instruction(instruction, output, input, new Vector<MEM.Label>(), new Vector<MEM.Label>(), true);
 	}
 
 	/**
@@ -321,6 +345,6 @@ public class ASM {
 	public static Instruction label(final MEM.Label label) {
 		final Vector<MEM.Label> labels = new Vector<MEM.Label>();
 		labels.add(label);
-		return new Instruction("*l0:", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels, false);
+		return new Instruction("*l0:", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels);
 	}
 }
