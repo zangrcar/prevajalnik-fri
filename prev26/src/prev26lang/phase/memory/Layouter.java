@@ -49,11 +49,6 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     private static final long FIRST_PARAM_OFFSET = STATIC_LINK_SIZE;
 
-    /**
-     * Whether a call reserves space for the callee result in the outgoing area.
-     */
-    private static final boolean RESULT_IN_CALL_RECORD = true;
-
     // --------------------------------------------------------------------
     //  Context objects
     // --------------------------------------------------------------------
@@ -507,7 +502,6 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      * Skeleton policy:
      *  - reserve space for static link
      *  - reserve one slot per argument
-     *  - reserve one result slot
      */
     private long callAreaSize(final AST.CallExpr callExpr) {
         long size = 0;

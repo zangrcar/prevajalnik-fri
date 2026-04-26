@@ -471,29 +471,29 @@ public class AsmGenerator {
 		}
 
 		if (call.addr instanceof IMR.NAME name)
-			emit("JAL ra, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(name.label));
+			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label));
 		else {
 			final MEM.Temp addr = munchExpr(call.addr);
-			emit("JALR ra, 0(*s0)", new Vector<MEM.Temp>(), temps(addr), new Vector<MEM.Label>());
+			emit("JALR *d0, 0(*s0)", temps(MEM.RA), temps(addr), new Vector<MEM.Label>());
 		}
 
 		if (dst != null)
-			emit("LD *d0, 0(sp)", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
+			emit("LD *d0, 0(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>());
 	}
 
 	/**
-	 * Stores a temporary to the outgoing-argument area at sp + offset.
+	 * Stores a temporary to the outgoing-argument area at SP + offset.
 	 */
 	private void storeToStack(final MEM.Temp src, final long offset) {
 		if (isImm12(offset)) {
-			emit("SD *s0, " + offset + "(sp)", new Vector<MEM.Temp>(), temps(src), new Vector<MEM.Label>());
+			emit("SD *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>());
 			return;
 		}
 
 		final MEM.Temp offsetTemp = new MEM.Temp();
 		final MEM.Temp addr = new MEM.Temp();
 		loadConst(offsetTemp, offset);
-		emit("ADD *d0, sp, *s0", temps(addr), temps(offsetTemp), new Vector<MEM.Label>());
+		emit("ADD *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>());
 		emit("SD *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
 	}
 }

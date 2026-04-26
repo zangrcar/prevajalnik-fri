@@ -7,6 +7,15 @@ package prev26lang.phase.memory;
  */
 public class MEM {
 
+	/** The fixed temporary holding the frame pointer. */
+	public static final Temp FP = new Temp("FP");
+
+	/** The fixed temporary holding the stack pointer. */
+	public static final Temp SP = new Temp("SP");
+
+	/** The fixed temporary holding the return address. */
+	public static final Temp RA = new Temp("RA");
+
 	/**
 	 * A stack frame.
 	 * 
@@ -51,7 +60,7 @@ public class MEM {
 			this.locsSize = locsSize;
 			this.argsSize = argsSize;
 			this.size = size;
-			this.FP = new Temp();
+			this.FP = MEM.FP;
 			this.RV = new Temp();
 		}
 
@@ -164,18 +173,27 @@ public class MEM {
 		/** The name of a temporary variable. */
 		public final long temp;
 
+		/** The optional display name of a fixed temporary variable. */
+		private final String name;
+
 		/** Counter of temporary variables. */
 		private static long count = 0;
 
 		/** Creates a new temporary variable. */
 		public Temp() {
+			this(null);
+		}
+
+		/** Creates a new named temporary variable. */
+		public Temp(final String name) {
 			this.temp = count;
+			this.name = name;
 			count++;
 		}
 
 		@Override
 		public String toString() {
-			return "T" + temp;
+			return name == null ? "T" + temp : name;
 		}
 
 	}
