@@ -14,6 +14,7 @@ import prev26lang.phase.memory.*;
 import prev26lang.phase.imrgen.*;
 import prev26lang.phase.imrlin.*;
 import prev26lang.phase.asmgen.*;
+import prev26lang.phase.livean.*;
 
 /**
  * The Prev26 compiler.
@@ -44,6 +45,7 @@ public class Compiler {
 			"imrgen", // -: generation of intermediate representation
 			"imrlin", // -: linearization of intermediate representation
 			"asmgen", // -: generation of assembly code
+			"livean", // -: liveness analysis
 			"all" // -----: putting it all together
 	));
 
@@ -310,6 +312,32 @@ public class Compiler {
 						}
 						break;
 					}
+
+					// === LIVENESS ANALYSIS ===
+					try (LiveAn livean = new LiveAn()) {
+						final Vector<ASM.CodeChunk> asmCodeChunks = asmGenerator.codeChunks();
+						livean.analyze(asmCodeChunks);
+						if (cmdLineOpts.get("--target-phase").equals("livean")) {
+							final Vector<LIV.CodeChunkAnal> codeChunkAnalyses = livean.codeChunkAnalyses();
+							System.out.printf("LIVEAN: code chunks=%d%n", codeChunkAnalyses.size());
+							for (int c = 0; c < codeChunkAnalyses.size(); c++) {
+								final ASM.CodeChunk codeChunk = asmCodeChunks.get(c);
+								final LIV.CodeChunkAnal analysis = codeChunkAnalyses.get(c);
+								final Vector<ASM.Instruction> instructions = analysis.instructions();
+								final Vector<HashSet<MEM.Temp>> in = analysis.in();
+								final Vector<HashSet<MEM.Temp>> out = analysis.out();
+
+								System.out.printf("LIVEAN: function %s%n", codeChunk.frame.label.name);
+								System.out.printf("  %3s  %-32s %-18s %-18s %-18s %-18s %-5s %-18s %-18s%n",
+									"NO.", "INSTRUCTION", "INPUT", "OUTPUT", "LABELS", "JUMPS", "MOVE", "IN", "OUT");
+								for (int i = 0; i < instructions.size(); i++) {
+									System.out.printf("  %3d  %s %-18s %-18s%n", i, instructions.get(i).format(), in.get(i), out.get(i));
+								}
+							}
+						}
+					}
+					if (cmdLineOpts.get("--target-phase").equals("livean"))
+						break;
 
 					break;
 					
