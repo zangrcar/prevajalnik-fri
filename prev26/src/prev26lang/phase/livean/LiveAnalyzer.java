@@ -66,7 +66,7 @@ public class LiveAnalyzer {
 				break;
 		}
 
-		return new LIV.CodeChunkAnal(instructions, use, def, in, out);
+		return new LIV.CodeChunkAnal(flowGraph.codeChunk(), use, def, in, out);
 	}
 
 	/**

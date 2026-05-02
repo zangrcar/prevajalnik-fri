@@ -11,6 +11,9 @@ import prev26lang.phase.memory.*;
  */
 public class FlowGraph {
 
+	/** The code chunk represented by this flow graph. */
+	private final ASM.CodeChunk codeChunk;
+
 	/** Instructions represented by graph nodes. */
 	private final Vector<ASM.Instruction> instructions;
 
@@ -26,10 +29,18 @@ public class FlowGraph {
 	 * @param codeChunk The code chunk whose instructions are graph nodes.
 	 */
 	public FlowGraph(final ASM.CodeChunk codeChunk) {
+		this.codeChunk = codeChunk;
 		instructions = codeChunk.instructions();
 		successors = new Vector<HashSet<Integer>>();
 		labelToInstruction = new HashMap<MEM.Label, Integer>();
 		generate();
+	}
+
+	/**
+	 * Returns the code chunk represented by this flow graph.
+	 */
+	public ASM.CodeChunk codeChunk() {
+		return codeChunk;
 	}
 
 	/**

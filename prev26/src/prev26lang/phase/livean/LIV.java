@@ -15,6 +15,12 @@ public class LIV {
 	 */
 	public static class CodeChunkAnal {
 
+		/** The analyzed code chunk. */
+		private final ASM.CodeChunk codeChunk;
+
+		/** The frame of the analyzed function. */
+		private final MEM.Frame frame;
+
 		/** Instructions of the analyzed code chunk. */
 		private final Vector<ASM.Instruction> instructions;
 
@@ -34,17 +40,33 @@ public class LIV {
 		 * Constructs liveness information of one code chunk.
 		 */
 		public CodeChunkAnal(
-			final Vector<ASM.Instruction> instructions,
+			final ASM.CodeChunk codeChunk,
 			final Vector<HashSet<MEM.Temp>> use,
 			final Vector<HashSet<MEM.Temp>> def,
 			final Vector<HashSet<MEM.Temp>> in,
 			final Vector<HashSet<MEM.Temp>> out
 		) {
-			this.instructions = new Vector<ASM.Instruction>(instructions);
+			this.codeChunk = codeChunk;
+			this.frame = codeChunk.frame;
+			this.instructions = codeChunk.instructions();
 			this.use = copySets(use);
 			this.def = copySets(def);
 			this.in = copySets(in);
 			this.out = copySets(out);
+		}
+
+		/**
+		 * Returns the analyzed code chunk.
+		 */
+		public ASM.CodeChunk codeChunk() {
+			return codeChunk;
+		}
+
+		/**
+		 * Returns the frame of the analyzed function.
+		 */
+		public MEM.Frame frame() {
+			return frame;
 		}
 
 		/**
