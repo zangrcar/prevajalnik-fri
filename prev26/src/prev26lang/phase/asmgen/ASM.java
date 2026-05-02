@@ -112,6 +112,26 @@ public class ASM {
 	}
 
 	/**
+	 * Control-flow behavior of an assembly instruction.
+	 */
+	public enum ControlFlow {
+		/** Instruction continues with the following instruction. */
+		NONE,
+
+		/** Instruction jumps unconditionally. */
+		JUMP,
+
+		/** Instruction jumps conditionally or continues with the following instruction. */
+		CJUMP,
+
+		/** Instruction calls a function and then continues after the call returns. */
+		CALL,
+
+		/** Instruction leaves the current function. */
+		RETURN
+	}
+
+	/**
 	 * One assembly instruction with temporary-variable metadata.
 	 */
 	public static class Instruction {
@@ -137,6 +157,9 @@ public class ASM {
 		/** True if this instruction only copies one temporary to another. */
 		public final boolean isMove;
 
+		/** Control-flow behavior of this instruction. */
+		public final ControlFlow controlFlow;
+
 		/**
 		 * Constructs an instruction.
 		 */
@@ -148,12 +171,28 @@ public class ASM {
 			final Vector<MEM.Label> jumpTargets,
 			final boolean isMove
 		) {
+			this(instruction, output, input, label, jumpTargets, isMove, ControlFlow.NONE);
+		}
+
+		/**
+		 * Constructs an instruction.
+		 */
+		public Instruction(
+			final String instruction,
+			final Vector<MEM.Temp> output,
+			final Vector<MEM.Temp> input,
+			final Vector<MEM.Label> label,
+			final Vector<MEM.Label> jumpTargets,
+			final boolean isMove,
+			final ControlFlow controlFlow
+		) {
 			this.instruction = instruction;
 			this.output = new Vector<MEM.Temp>(output);
 			this.input = new Vector<MEM.Temp>(input);
 			this.label = new Vector<MEM.Label>(label);
 			this.jumpTargets = new Vector<MEM.Label>(jumpTargets);
 			this.isMove = isMove;
+			this.controlFlow = controlFlow;
 		}
 
 		/**
@@ -179,6 +218,20 @@ public class ASM {
 			final Vector<MEM.Label> jumpTargets
 		) {
 			this(instruction, output, input, label, jumpTargets, false);
+		}
+
+		/**
+		 * Constructs a non-move instruction.
+		 */
+		public Instruction(
+			final String instruction,
+			final Vector<MEM.Temp> output,
+			final Vector<MEM.Temp> input,
+			final Vector<MEM.Label> label,
+			final Vector<MEM.Label> jumpTargets,
+			final ControlFlow controlFlow
+		) {
+			this(instruction, output, input, label, jumpTargets, false, controlFlow);
 		}
 
 		/** Returns a defensive copy of the used temporaries. */

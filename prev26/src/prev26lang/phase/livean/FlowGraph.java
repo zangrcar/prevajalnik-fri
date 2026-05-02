@@ -97,10 +97,10 @@ public class FlowGraph {
 		final ASM.Instruction instruction = instructions.get(index);
 		final HashSet<Integer> successors = new HashSet<Integer>();
 
-		if (mayFallThrough(instruction) && (index + 1 < instructions.size()))
+		if (fallsThrough(instruction) && (index + 1 < instructions.size()))
 			successors.add(index + 1);
 
-		if (!isFunctionCall(instruction))
+		if (jumpsToTargets(instruction))
 			addJumpTargets(successors, instruction);
 
 		return successors;
@@ -128,22 +128,21 @@ public class FlowGraph {
 	/**
 	 * Returns true if control can continue with the next instruction.
 	 */
-	private boolean mayFallThrough(final ASM.Instruction instruction) {
-		return !isUnconditionalJump(instruction);
+	private boolean fallsThrough(final ASM.Instruction instruction) {
+		return switch (instruction.controlFlow) {
+		case NONE, CJUMP, CALL -> true;
+		case JUMP, RETURN -> false;
+		};
 	}
 
 	/**
-	 * Returns true if this instruction is an unconditional jump.
+	 * Returns true if this instruction can jump to explicit targets.
 	 */
-	private boolean isUnconditionalJump(final ASM.Instruction instruction) {
-		return instruction.instruction.startsWith("JAL x0") || instruction.instruction.startsWith("JALR x0");
-	}
-
-	/**
-	 * Returns true if this instruction calls a function.
-	 */
-	private boolean isFunctionCall(final ASM.Instruction instruction) {
-		return instruction.instruction.startsWith("JAL *d") || instruction.instruction.startsWith("JALR *d");
+	private boolean jumpsToTargets(final ASM.Instruction instruction) {
+		return switch (instruction.controlFlow) {
+		case JUMP, CJUMP -> true;
+		case NONE, CALL, RETURN -> false;
+		};
 	}
 
 	/**
