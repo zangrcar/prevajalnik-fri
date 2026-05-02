@@ -192,6 +192,16 @@ public class MEM {
 		}
 
 		@Override
+		public boolean equals(final Object object) {
+			return (object instanceof Temp temp) && (this.temp == temp.temp);
+		}
+
+		@Override
+		public int hashCode() {
+			return Long.hashCode(temp);
+		}
+
+		@Override
 		public String toString() {
 			return name == null ? "T" + temp : name;
 		}

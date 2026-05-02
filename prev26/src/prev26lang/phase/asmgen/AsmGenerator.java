@@ -504,7 +504,7 @@ public class AsmGenerator {
 		}
 
 		if (call.addr instanceof IMR.NAME name)
-			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), labels(name.label),
+			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), new Vector<MEM.Label>(),
 				ASM.ControlFlow.CALL);
 		else {
 			final MEM.Temp addr = munchExpr(call.addr);
