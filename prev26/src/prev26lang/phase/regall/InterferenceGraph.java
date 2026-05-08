@@ -46,7 +46,7 @@ public class InterferenceGraph {
 
 			graph.addClique(in.get(i));
 			graph.addClique(out.get(i));
-			graph.addDefOutEdges(def.get(i), out.get(i));
+			graph.addDefOutEdges(instructions.get(i), def.get(i), out.get(i));
 		}
 
 		for (final ASM.Instruction instruction : instructions)
@@ -240,11 +240,32 @@ public class InterferenceGraph {
 
 	/**
 	 * Adds normal interference between definitions and live-out temporaries.
+	 * Move instructions are the one important exception: the move source and
+	 * destination may share a register, so that pair stays a move preference
+	 * instead of becoming normal interference.
 	 */
-	private void addDefOutEdges(final Collection<MEM.Temp> defs, final Collection<MEM.Temp> liveOut) {
+	private void addDefOutEdges(
+		final ASM.Instruction instruction,
+		final Collection<MEM.Temp> defs,
+		final Collection<MEM.Temp> liveOut
+	) {
 		for (final MEM.Temp def : defs)
-			for (final MEM.Temp out : liveOut)
+			for (final MEM.Temp out : liveOut) {
+				if (isMoveSourceDestinationPair(instruction, def, out))
+					continue;
 				addNormalEdge(def, out);
+			}
+	}
+
+	/**
+	 * Returns true if a def/live-out pair is exactly the pair copied by a move.
+	 */
+	private boolean isMoveSourceDestinationPair(
+		final ASM.Instruction instruction,
+		final MEM.Temp def,
+		final MEM.Temp out
+	) {
+		return instruction.isMove && instruction.outputs().contains(def) && instruction.inputs().contains(out);
 	}
 
 	/**
