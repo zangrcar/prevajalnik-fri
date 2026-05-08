@@ -87,7 +87,7 @@ public class Compiler {
 
 		try {
 			final int numRegs = Integer.parseInt(value);
-			return (1 <= numRegs) && (numRegs <= RegAll.maxRegisters());
+			return (RegAll.minRegisters() <= numRegs) && (numRegs <= RegAll.maxRegisters());
 		} catch (final NumberFormatException __) {
 			return false;
 		}
@@ -141,7 +141,7 @@ public class Compiler {
 							}
 
 							cmdLineOpts.put(cmdLineOptName, cmdLineOptValue);
-							usedCmdLineOpts.add(cmdLineOptValue);
+							usedCmdLineOpts.add(cmdLineOptName);
 						} else {
 							// Repeated specification of a command line option.
 							Report.warning("Command line option '" + cmdLineArgs[argc] + "' ignored.");

@@ -42,7 +42,7 @@ public class RegAll extends Phase {
 	 * @param numRegs Number of allocatable registers requested by the programmer.
 	 */
 	public void allocate(final Vector<ASM.CodeChunk> codeChunks, final int numRegs) {
-		if ((numRegs < 1) || (numRegs > maxRegisters()))
+		if ((numRegs < minRegisters()) || (numRegs > maxRegisters()))
 			throw new Report.Error("Illegal number of registers: " + numRegs + ".");
 
 		this.codeChunks.clear();
@@ -73,6 +73,13 @@ public class RegAll extends Phase {
 			copy.add(new LinkedHashMap<MEM.Temp, String>(registerMap));
 
 		return copy;
+	}
+
+	/**
+	 * Returns the minimum supported value of {@code --num-regs}.
+	 */
+	public static int minRegisters() {
+		return 2;
 	}
 
 	/**

@@ -64,6 +64,23 @@ public class MEM {
 			this.RV = new Temp();
 		}
 
+		/**
+		 * Constructs a copy of an existing frame with a different total size.
+		 *
+		 * @param frame The frame whose labels, layout sizes, and special temporaries
+		 *              are preserved.
+		 * @param size  The new total frame size.
+		 */
+		public Frame(Frame frame, long size) {
+			this.label = frame.label;
+			this.depth = frame.depth;
+			this.locsSize = frame.locsSize;
+			this.argsSize = frame.argsSize;
+			this.size = size;
+			this.FP = frame.FP;
+			this.RV = frame.RV;
+		}
+
 	}
 
 	/**

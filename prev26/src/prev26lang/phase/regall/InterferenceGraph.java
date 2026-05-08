@@ -17,12 +17,16 @@ public class InterferenceGraph {
 	/** Maps every original temporary to its current graph node. */
 	private final LinkedHashMap<MEM.Temp, Node> tempToNode;
 
+	/** Maps coalesced-away nodes to the nodes that now represent them. */
+	private final LinkedHashMap<Node, Node> aliases;
+
 	/**
 	 * Constructs an empty interference graph.
 	 */
 	public InterferenceGraph() {
 		nodes = new LinkedHashSet<Node>();
 		tempToNode = new LinkedHashMap<MEM.Temp, Node>();
+		aliases = new LinkedHashMap<Node, Node>();
 	}
 
 	/**
@@ -71,6 +75,19 @@ public class InterferenceGraph {
 	}
 
 	/**
+	 * Returns the current representative of a possibly coalesced node.
+	 */
+	public Node representative(final Node node) {
+		final Node alias = aliases.get(node);
+		if (alias == null)
+			return node;
+
+		final Node representative = representative(alias);
+		aliases.put(node, representative);
+		return representative;
+	}
+
+	/**
 	 * Finds a non-move-related node whose degree is smaller than the register count.
 	 * 
 	 * @param numRegs Number of available physical registers.
@@ -95,7 +112,9 @@ public class InterferenceGraph {
 			for (final Node second : first.moveNeighbours()) {
 				if (!nodes.contains(second))
 					continue;
-				if (canCoalesce(first, second, numRegs) || canCoalesce(second, first, numRegs))
+				if (canCoalesce(first, second, numRegs))
+					return new NodePair(second, first);
+				if (canCoalesce(second, first, numRegs))
 					return new NodePair(first, second);
 			}
 		}
@@ -156,6 +175,7 @@ public class InterferenceGraph {
 	 */
 	public void coalesce(final Node kept, final Node removed) {
 		kept.absorbTemps(removed);
+		aliases.put(removed, kept);
 
 		for (final MEM.Temp temp : removed.temps())
 			tempToNode.put(temp, kept);
@@ -327,10 +347,10 @@ public class InterferenceGraph {
 	 */
 	public static class NodePair {
 
-		/** First node of the pair. */
+		/** Node that remains in the graph. */
 		public final Node first;
 
-		/** Second node of the pair. */
+		/** Node that is merged into {@link #first}. */
 		public final Node second;
 
 		/**

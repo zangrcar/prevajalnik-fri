@@ -18,6 +18,9 @@ public class RegisterAllocator {
 	/** Next spill slot index for the code chunk currently being allocated. */
 	private int nextSpillSlot;
 
+	/** Original frame of the code chunk currently being allocated. */
+	private MEM.Frame baseFrame;
+
 	/**
 	 * Constructs a register allocator.
 	 * 
@@ -26,6 +29,7 @@ public class RegisterAllocator {
 	public RegisterAllocator(final int numRegs) {
 		this.numRegs = numRegs;
 		this.nextSpillSlot = 0;
+		this.baseFrame = null;
 	}
 
 	/**
@@ -38,6 +42,7 @@ public class RegisterAllocator {
 	public Result allocate(final ASM.CodeChunk codeChunk) {
 		ASM.CodeChunk currentCodeChunk = codeChunk;
 		nextSpillSlot = 0;
+		baseFrame = codeChunk.frame;
 
 		for (int attempt = 0; attempt < 100; attempt++) {
 			final LIV.CodeChunkAnal analysis = analyze(currentCodeChunk);
@@ -71,7 +76,7 @@ public class RegisterAllocator {
 
 		while (!stack.empty()) {
 			final StackEntry entry = stack.pop();
-			final Integer color = chooseColor(entry, colors);
+			final Integer color = chooseColor(entry, colors, graph);
 
 			if (color == null) {
 				spilledTemps.addAll(entry.node.temps());
@@ -149,12 +154,17 @@ public class RegisterAllocator {
 	 */
 	private Integer chooseColor(
 		final StackEntry entry,
-		final LinkedHashMap<InterferenceGraph.Node, Integer> colors
+		final LinkedHashMap<InterferenceGraph.Node, Integer> colors,
+		final InterferenceGraph graph
 	) {
 		final boolean[] used = new boolean[numRegs];
 
 		for (final InterferenceGraph.Node neighbour : entry.neighbours) {
-			final Integer color = colors.get(neighbour);
+			final InterferenceGraph.Node representative = graph.representative(neighbour);
+			if (representative == entry.node)
+				continue;
+
+			final Integer color = colors.get(representative);
 			if (color != null)
 				used[color] = true;
 		}
@@ -191,13 +201,13 @@ public class RegisterAllocator {
 		final Vector<ASM.Instruction> rewritten = new Vector<ASM.Instruction>();
 
 		for (final ASM.Instruction instruction : codeChunk.instructions()) {
-			final Rewrite rewrite = rewriteInstruction(instruction, spilledTemps, offsets, codeChunk.frame);
+			final Rewrite rewrite = rewriteInstruction(instruction, spilledTemps, offsets);
 			rewritten.addAll(rewrite.before);
 			rewritten.add(rewrite.instruction);
 			rewritten.addAll(rewrite.after);
 		}
 
-		return new ASM.CodeChunk(codeChunk.frame, rewritten);
+		return new ASM.CodeChunk(spillFrame(), rewritten);
 	}
 
 	/**
@@ -207,8 +217,7 @@ public class RegisterAllocator {
 	private Rewrite rewriteInstruction(
 		final ASM.Instruction instruction,
 		final LinkedHashSet<MEM.Temp> spilledTemps,
-		final LinkedHashMap<MEM.Temp, Long> offsets,
-		final MEM.Frame frame
+		final LinkedHashMap<MEM.Temp, Long> offsets
 	) {
 		final Vector<ASM.Instruction> before = new Vector<ASM.Instruction>();
 		final Vector<ASM.Instruction> after = new Vector<ASM.Instruction>();
@@ -217,13 +226,13 @@ public class RegisterAllocator {
 		for (final MEM.Temp temp : unique(instruction.inputs()))
 			if (spilledTemps.contains(temp)) {
 				final MEM.Temp replacement = replacementFor(temp, replacements);
-				before.add(loadFromSpill(replacement, spillOffset(temp, offsets, frame)));
+				before.addAll(loadFromSpill(replacement, spillOffset(temp, offsets)));
 			}
 
 		for (final MEM.Temp temp : unique(instruction.outputs()))
 			if (spilledTemps.contains(temp)) {
 				final MEM.Temp replacement = replacementFor(temp, replacements);
-				after.add(storeToSpill(replacement, spillOffset(temp, offsets, frame)));
+				after.addAll(storeToSpill(replacement, spillOffset(temp, offsets)));
 			}
 
 		final ASM.Instruction rewritten = new ASM.Instruction(
@@ -282,38 +291,123 @@ public class RegisterAllocator {
 	/**
 	 * Returns the stack offset assigned to one spilled temporary.
 	 */
-	private long spillOffset(final MEM.Temp temp, final LinkedHashMap<MEM.Temp, Long> offsets, final MEM.Frame frame) {
+	private long spillOffset(final MEM.Temp temp, final LinkedHashMap<MEM.Temp, Long> offsets) {
 		Long offset = offsets.get(temp);
 		if (offset != null)
 			return offset;
 
-		// arguments + old FP + RV + Temps
-		offset = frame.argsSize + 16 + 8L * nextSpillSlot;
+		if (baseFrame == null)
+			throw new Report.InternalError();
+
+		// Skip the outgoing arguments and the fixed old-FP/RA slots.
+		offset = baseFrame.argsSize + 16 + 8L * nextSpillSlot;
 		nextSpillSlot++;
 		offsets.put(temp, offset);
 		return offset;
 	}
 
 	/**
-	 * Builds an instruction that loads a spilled value into a fresh temporary.
+	 * Returns the current frame enlarged by all spill slots allocated so far.
 	 */
-	private ASM.Instruction loadFromSpill(final MEM.Temp dst, final long offset) {
-		final Vector<MEM.Temp> output = new Vector<MEM.Temp>();
-		final Vector<MEM.Temp> input = new Vector<MEM.Temp>();
-		output.add(dst);
-		input.add(MEM.SP);
-		return new ASM.Instruction("LD *d0, " + offset + "(*s0)", output, input, new Vector<MEM.Label>());
+	private MEM.Frame spillFrame() {
+		if (baseFrame == null)
+			throw new Report.InternalError();
+
+		return new MEM.Frame(baseFrame, baseFrame.size + 8L * nextSpillSlot);
 	}
 
 	/**
-	 * Builds an instruction that stores a fresh temporary back into a spill slot.
+	 * Builds instructions that load a spilled value into a fresh temporary.
 	 */
-	private ASM.Instruction storeToSpill(final MEM.Temp src, final long offset) {
-		final Vector<MEM.Temp> output = new Vector<MEM.Temp>();
-		final Vector<MEM.Temp> input = new Vector<MEM.Temp>();
-		input.add(src);
-		input.add(MEM.SP);
-		return new ASM.Instruction("SD *s0, " + offset + "(*s1)", output, input, new Vector<MEM.Label>());
+	private Vector<ASM.Instruction> loadFromSpill(final MEM.Temp dst, final long offset) {
+		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
+
+		if (isImm12(offset)) {
+			instructions.add(new ASM.Instruction("LD *d0, " + offset + "(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>()));
+			return instructions;
+		}
+
+		final MEM.Temp addr = spillAddress(offset, instructions);
+		instructions.add(new ASM.Instruction("LD *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>()));
+		return instructions;
+	}
+
+	/**
+	 * Builds instructions that store a fresh temporary back into a spill slot.
+	 */
+	private Vector<ASM.Instruction> storeToSpill(final MEM.Temp src, final long offset) {
+		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
+
+		if (isImm12(offset)) {
+			instructions.add(new ASM.Instruction("SD *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>()));
+			return instructions;
+		}
+
+		final MEM.Temp addr = spillAddress(offset, instructions);
+		instructions.add(new ASM.Instruction("SD *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>()));
+		return instructions;
+	}
+
+	/**
+	 * Builds instructions that compute SP plus a large spill-slot offset.
+	 */
+	private MEM.Temp spillAddress(final long offset, final Vector<ASM.Instruction> instructions) {
+		final MEM.Temp offsetTemp = new MEM.Temp();
+		final MEM.Temp addr = new MEM.Temp();
+
+		instructions.addAll(loadConst(offsetTemp, offset));
+		instructions.add(new ASM.Instruction("ADD *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>()));
+		return addr;
+	}
+
+	/**
+	 * Loads a 64-bit constant into a temporary.
+	 */
+	private Vector<ASM.Instruction> loadConst(final MEM.Temp dst, final long value) {
+		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
+
+		if (isImm12(value)) {
+			instructions.add(new ASM.Instruction("ADDI *d0, x0, " + value, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+			return instructions;
+		}
+
+		boolean started = false;
+		for (int shift = 56; shift >= 0; shift -= 8) {
+			final long byteValue = (value >>> shift) & 0xFFL;
+			if (!started) {
+				if ((byteValue == 0) && (shift > 0))
+					continue;
+				instructions.add(new ASM.Instruction("ADDI *d0, x0, " + byteValue, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+				started = true;
+				continue;
+			}
+
+			instructions.add(new ASM.Instruction("SLLI *d0, *s0, 8", temps(dst), temps(dst), new Vector<MEM.Label>()));
+			if (byteValue != 0)
+				instructions.add(new ASM.Instruction("ADDI *d0, *s0, " + byteValue, temps(dst), temps(dst), new Vector<MEM.Label>()));
+		}
+
+		if (!started)
+			instructions.add(new ASM.Instruction("ADDI *d0, x0, 0", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+
+		return instructions;
+	}
+
+	/**
+	 * Returns true if a value fits into a signed 12-bit immediate field.
+	 */
+	private boolean isImm12(final long value) {
+		return -2048 <= value && value <= 2047;
+	}
+
+	/**
+	 * Creates a temporary vector.
+	 */
+	private Vector<MEM.Temp> temps(final MEM.Temp... temps) {
+		final Vector<MEM.Temp> vector = new Vector<MEM.Temp>();
+		for (final MEM.Temp temp : temps)
+			vector.add(temp);
+		return vector;
 	}
 
 	/**
