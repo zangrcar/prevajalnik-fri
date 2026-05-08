@@ -305,7 +305,7 @@ public class AsmGenerator {
 		final MEM.Label posLabel = labelOf(cjump.posAddr);
 		final MEM.Label negLabel = labelOf(cjump.negAddr);
 
-		emit("BNE *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel), labels(posLabel),
+		emit("BNE *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel), labels(posLabel, negLabel),
 			ASM.ControlFlow.CJUMP);
 		emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(negLabel), labels(negLabel),
 			ASM.ControlFlow.JUMP);

@@ -1,4 +1,8 @@
-fun g(x: int): int = x+1
 fun main () : int = 
-	g(5)
+	let
+		var a: int
+	in
+		a = 5
+	end,
+	0
 

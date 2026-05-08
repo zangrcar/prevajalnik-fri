@@ -29,6 +29,9 @@
  * <li>{@code --xsl=}<i>dir-name</i>: The directory where xsl templates used by
  * generated xml report files are stored.</li>
  * 
+ * <li>{@code --num-regs=}<i>number</i>: The number of physical registers used by
+ * register allocation.</li>
+ * 
  * <li>{@code --dev-mode=}{@code on}|{@code off}: Development mode (browse the
  * source code for information).
  * 

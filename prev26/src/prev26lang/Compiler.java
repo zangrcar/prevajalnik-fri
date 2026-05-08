@@ -15,6 +15,7 @@ import prev26lang.phase.imrgen.*;
 import prev26lang.phase.imrlin.*;
 import prev26lang.phase.asmgen.*;
 import prev26lang.phase.livean.*;
+import prev26lang.phase.regall.*;
 
 /**
  * The Prev26 compiler.
@@ -31,6 +32,7 @@ public class Compiler {
 			Map.entry("--logged-phase", "all"), // -: the name of the logged phase (or none or all)
 			Map.entry("--xml", ""), // -------------: the name of xml files (without phase name and extension)
 			Map.entry("--xsl", "../lib/xsl/"), // --: the directory with the xsl templates for the logs
+			Map.entry("--num-regs", "8"), // -------: number of allocatable registers
 			Map.entry("--dev-mode", "on") // -------: development mode (on or off)
 	));
 
@@ -46,6 +48,7 @@ public class Compiler {
 			"imrlin", // -: linearization of intermediate representation
 			"asmgen", // -: generation of assembly code
 			"livean", // -: liveness analysis
+			"regall", // -: register allocation
 			"all" // -----: putting it all together
 	));
 
@@ -73,6 +76,21 @@ public class Compiler {
 		if (cmdLineOptValue == null)
 			throw new Report.InternalError();
 		return cmdLineOpts.get(cmdLineOptName);
+	}
+
+	/**
+	 * Checks whether the command-line register count is supported.
+	 */
+	private static boolean legalNumRegs(final String value) {
+		if (!value.matches("[0-9]+"))
+			return false;
+
+		try {
+			final int numRegs = Integer.parseInt(value);
+			return (1 <= numRegs) && (numRegs <= RegAll.maxRegisters());
+		} catch (final NumberFormatException __) {
+			return false;
+		}
 	}
 
 	/** (Unused but included to keep javadoc happy.) */
@@ -114,6 +132,10 @@ public class Compiler {
 								continue;
 							}
 							if (cmdLineOptName.equals("--dev-mode") && (!cmdLineOptValue.matches("on|off"))) {
+								Report.warning("Illegal value in '" + cmdLineArgs[argc] + "' ignored.");
+								continue;
+							}
+							if (cmdLineOptName.equals("--num-regs") && (!legalNumRegs(cmdLineOptValue))) {
 								Report.warning("Illegal value in '" + cmdLineArgs[argc] + "' ignored.");
 								continue;
 							}
@@ -315,9 +337,9 @@ public class Compiler {
 
 					// === LIVENESS ANALYSIS ===
 					try (LiveAn livean = new LiveAn()) {
-						final Vector<ASM.CodeChunk> asmCodeChunks = asmGenerator.codeChunks();
-						livean.analyze(asmCodeChunks);
 						if (cmdLineOpts.get("--target-phase").equals("livean")) {
+							final Vector<ASM.CodeChunk> asmCodeChunks = asmGenerator.codeChunks();
+							livean.analyze(asmCodeChunks);
 							final Vector<LIV.CodeChunkAnal> codeChunkAnalyses = livean.codeChunkAnalyses();
 							System.out.printf("LIVEAN: code chunks=%d%n", codeChunkAnalyses.size());
 							for (int c = 0; c < codeChunkAnalyses.size(); c++) {
@@ -337,6 +359,20 @@ public class Compiler {
 						}
 					}
 					if (cmdLineOpts.get("--target-phase").equals("livean"))
+						break;
+
+					// === REGISTER ALLOCATION ===
+					try (RegAll regall = new RegAll()) {
+						final int numRegs = Integer.parseInt(cmdLineOpts.get("--num-regs"));
+						regall.allocate(asmGenerator.codeChunks(), numRegs);
+
+						if (cmdLineOpts.get("--target-phase").equals("regall")) {
+							System.out.printf("REGALL: num-regs=%d%n", numRegs);
+							for (final String line : regall.format(asmGenerator.dataChunks()))
+								System.out.println(line);
+						}
+					}
+					if (cmdLineOpts.get("--target-phase").equals("regall"))
 						break;
 
 					break;
