@@ -135,7 +135,7 @@ public class AsmGenerator {
 		for (final IMR.Stmt stmt : codeChunk.stmts())
 			munchStmt(stmt);
 
-		return new ASM.CodeChunk(codeChunk.frame, instructions);
+		return new ASM.CodeChunk(codeChunk.frame, codeChunk.entryLabel, codeChunk.exitLabel, instructions);
 	}
 
 	/**

@@ -16,6 +16,7 @@ import prev26lang.phase.imrlin.*;
 import prev26lang.phase.asmgen.*;
 import prev26lang.phase.livean.*;
 import prev26lang.phase.regall.*;
+import prev26lang.phase.finasm.*;
 
 /**
  * The Prev26 compiler.
@@ -49,6 +50,7 @@ public class Compiler {
 			"asmgen", // -: generation of assembly code
 			"livean", // -: liveness analysis
 			"regall", // -: register allocation
+			"finasm", // -: final assembly file
 			"all" // -----: putting it all together
 	));
 
@@ -362,7 +364,8 @@ public class Compiler {
 						break;
 
 					// === REGISTER ALLOCATION ===
-					try (RegAll regall = new RegAll()) {
+					final RegAll regall = new RegAll();
+					try (regall) {
 						final int numRegs = Integer.parseInt(cmdLineOpts.get("--num-regs"));
 						regall.allocate(asmGenerator.codeChunks(), numRegs);
 
@@ -373,6 +376,20 @@ public class Compiler {
 						}
 					}
 					if (cmdLineOpts.get("--target-phase").equals("regall"))
+						break;
+
+					// === FINAL ASSEMBLY ===
+					try (FinAsm finasm = new FinAsm()) {
+						finasm.emit(
+							asmGenerator.dataChunks(),
+							regall.codeChunks(),
+							regall.registers(),
+							cmdLineOpts.get("--dst-file-name")
+						);
+						if (cmdLineOpts.get("--target-phase").matches("finasm|all"))
+							System.out.printf("FINASM: wrote %s%n", cmdLineOpts.get("--dst-file-name"));
+					}
+					if (cmdLineOpts.get("--target-phase").equals("finasm"))
 						break;
 
 					break;

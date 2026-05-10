@@ -58,18 +58,18 @@ public class ASM {
 		}
 
 		/**
-		 * Formats this data chunk as assembler directives.
+		 * Formats this data chunk as Ripes-compatible assembler directives.
 		 */
 		public Vector<String> format() {
 			final Vector<String> lines = new Vector<String>();
 			if (label == null) {
-				lines.add(".balign " + alignment);
+				lines.add(".align " + log2(alignment));
 				return lines;
 			}
 			lines.add(label.name + ":");
 
 			if (bytes.isEmpty()) {
-				lines.add("  .zero " + size);
+				lines.add("  .space " + size);
 				return lines;
 			}
 
@@ -82,6 +82,19 @@ public class ASM {
 			lines.add(line.toString());
 			return lines;
 		}
+
+		/**
+		 * Returns the exponent of a power-of-two alignment.
+		 */
+		private long log2(final long value) {
+			long exponent = 0;
+			long current = value;
+			while (current > 1) {
+				current /= 2;
+				exponent++;
+			}
+			return exponent;
+		}
 	}
 
 	/**
@@ -92,6 +105,12 @@ public class ASM {
 		/** The frame of the function this code belongs to. */
 		public final MEM.Frame frame;
 
+		/** Label at which the function body starts. */
+		public final MEM.Label entryLabel;
+
+		/** Label at which the function body exits into the epilogue. */
+		public final MEM.Label exitLabel;
+
 		/** The generated instructions. */
 		private final Vector<Instruction> instructions;
 
@@ -99,7 +118,21 @@ public class ASM {
 		 * Constructs a code chunk.
 		 */
 		public CodeChunk(final MEM.Frame frame, final Vector<Instruction> instructions) {
+			this(frame, null, null, instructions);
+		}
+
+		/**
+		 * Constructs a code chunk.
+		 */
+		public CodeChunk(
+			final MEM.Frame frame,
+			final MEM.Label entryLabel,
+			final MEM.Label exitLabel,
+			final Vector<Instruction> instructions
+		) {
 			this.frame = frame;
+			this.entryLabel = entryLabel;
+			this.exitLabel = exitLabel;
 			this.instructions = new Vector<Instruction>(instructions);
 		}
 

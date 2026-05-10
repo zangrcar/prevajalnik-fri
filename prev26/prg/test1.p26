@@ -1,8 +1,6 @@
 fun main () : int = 
-	let
-		var a: int
-	in
-		a = 5
-	end,
+	g(3),
 	0
+
+fun g(x: int) : int = x + 1
 
