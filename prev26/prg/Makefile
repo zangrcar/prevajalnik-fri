@@ -3,9 +3,16 @@ ANTLRDIR        = ../lib/antlr-4.13.2-complete.jar
 XSLTPROC	= xsltproc
 RM              = 'rm' -fr
 
-PHASE		= all
+PHASE		?=
+
+ifeq ($(strip $(PHASE)),)
+TARGETPHASE	?= all
+LOGGEDPHASE	?= none
+else
 TARGETPHASE	?= $(PHASE)
 LOGGEDPHASE	?= $(PHASE)
+endif
+
 NUMREGS ?= 26
 
 TESTS := $(basename $(wildcard test*.p26))
