@@ -323,12 +323,12 @@ public class RegisterAllocator {
 		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
 
 		if (isImm12(offset)) {
-			instructions.add(new ASM.Instruction("LD *d0, " + offset + "(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>()));
+			instructions.add(new ASM.Instruction("ld *d0, " + offset + "(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>()));
 			return instructions;
 		}
 
 		final MEM.Temp addr = spillAddress(offset, instructions);
-		instructions.add(new ASM.Instruction("LD *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>()));
+		instructions.add(new ASM.Instruction("ld *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>()));
 		return instructions;
 	}
 
@@ -339,12 +339,12 @@ public class RegisterAllocator {
 		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
 
 		if (isImm12(offset)) {
-			instructions.add(new ASM.Instruction("SD *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>()));
+			instructions.add(new ASM.Instruction("sd *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>()));
 			return instructions;
 		}
 
 		final MEM.Temp addr = spillAddress(offset, instructions);
-		instructions.add(new ASM.Instruction("SD *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>()));
+		instructions.add(new ASM.Instruction("sd *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>()));
 		return instructions;
 	}
 
@@ -356,7 +356,7 @@ public class RegisterAllocator {
 		final MEM.Temp addr = new MEM.Temp();
 
 		instructions.addAll(loadConst(offsetTemp, offset));
-		instructions.add(new ASM.Instruction("ADD *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>()));
+		instructions.add(new ASM.Instruction("add *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>()));
 		return addr;
 	}
 
@@ -367,7 +367,7 @@ public class RegisterAllocator {
 		final Vector<ASM.Instruction> instructions = new Vector<ASM.Instruction>();
 
 		if (isImm12(value)) {
-			instructions.add(new ASM.Instruction("ADDI *d0, x0, " + value, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+			instructions.add(new ASM.Instruction("addi *d0, x0, " + value, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
 			return instructions;
 		}
 
@@ -377,18 +377,18 @@ public class RegisterAllocator {
 			if (!started) {
 				if ((byteValue == 0) && (shift > 0))
 					continue;
-				instructions.add(new ASM.Instruction("ADDI *d0, x0, " + byteValue, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+				instructions.add(new ASM.Instruction("addi *d0, x0, " + byteValue, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
 				started = true;
 				continue;
 			}
 
-			instructions.add(new ASM.Instruction("SLLI *d0, *s0, 8", temps(dst), temps(dst), new Vector<MEM.Label>()));
+			instructions.add(new ASM.Instruction("slli *d0, *s0, 8", temps(dst), temps(dst), new Vector<MEM.Label>()));
 			if (byteValue != 0)
-				instructions.add(new ASM.Instruction("ADDI *d0, *s0, " + byteValue, temps(dst), temps(dst), new Vector<MEM.Label>()));
+				instructions.add(new ASM.Instruction("addi *d0, *s0, " + byteValue, temps(dst), temps(dst), new Vector<MEM.Label>()));
 		}
 
 		if (!started)
-			instructions.add(new ASM.Instruction("ADDI *d0, x0, 0", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
+			instructions.add(new ASM.Instruction("addi *d0, x0, 0", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>()));
 
 		return instructions;
 	}

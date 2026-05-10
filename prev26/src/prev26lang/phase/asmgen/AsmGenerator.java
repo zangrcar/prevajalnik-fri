@@ -268,14 +268,14 @@ public class AsmGenerator {
 		if (move.dst instanceof IMR.MEM1 mem) {
 			final MEM.Temp addr = munchExpr(mem.addr);
 			final MEM.Temp src = munchExpr(move.src);
-			emit("SB *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
+			emit("sb *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
 			return;
 		}
 
 		if (move.dst instanceof IMR.MEM8 mem) {
 			final MEM.Temp addr = munchExpr(mem.addr);
 			final MEM.Temp src = munchExpr(move.src);
-			emit("SD *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
+			emit("sd *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
 			return;
 		}
 
@@ -287,13 +287,13 @@ public class AsmGenerator {
 	 */
 	private void munchJump(final IMR.JUMP jump) {
 		if (jump.addr instanceof IMR.NAME name) {
-			emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(name.label), labels(name.label),
+			emit("jal x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(name.label), labels(name.label),
 				ASM.ControlFlow.JUMP);
 			return;
 		}
 
 		final MEM.Temp addr = munchExpr(jump.addr);
-		emit("JALR x0, 0(*s0)", new Vector<MEM.Temp>(), temps(addr), new Vector<MEM.Label>(),
+		emit("jalr x0, 0(*s0)", new Vector<MEM.Temp>(), temps(addr), new Vector<MEM.Label>(),
 			new Vector<MEM.Label>(), ASM.ControlFlow.JUMP);
 	}
 
@@ -305,9 +305,9 @@ public class AsmGenerator {
 		final MEM.Label posLabel = labelOf(cjump.posAddr);
 		final MEM.Label negLabel = labelOf(cjump.negAddr);
 
-		emit("BNE *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel), labels(posLabel, negLabel),
+		emit("bne *s0, x0, *l0", new Vector<MEM.Temp>(), temps(cond), labels(posLabel), labels(posLabel, negLabel),
 			ASM.ControlFlow.CJUMP);
-		emit("JAL x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(negLabel), labels(negLabel),
+		emit("jal x0, *l0", new Vector<MEM.Temp>(), new Vector<MEM.Temp>(), labels(negLabel), labels(negLabel),
 			ASM.ControlFlow.JUMP);
 	}
 
@@ -354,7 +354,7 @@ public class AsmGenerator {
 
 		if (expr instanceof IMR.TEMP temp) {
 			if (dst != temp.temp)
-				emit(ASM.move("ADDI *d0, *s0, 0", dst, temp.temp));
+				emit(ASM.move("addi *d0, *s0, 0", dst, temp.temp));
 			return;
 		}
 
@@ -370,13 +370,13 @@ public class AsmGenerator {
 
 		if (expr instanceof IMR.MEM1 mem) {
 			final MEM.Temp addr = munchExpr(mem.addr);
-			emit("LBU *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>());
+			emit("lbu *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>());
 			return;
 		}
 
 		if (expr instanceof IMR.MEM8 mem) {
 			final MEM.Temp addr = munchExpr(mem.addr);
-			emit("LD *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>());
+			emit("ld *d0, 0(*s0)", temps(dst), temps(addr), new Vector<MEM.Label>());
 			return;
 		}
 
@@ -393,7 +393,7 @@ public class AsmGenerator {
 	 */
 	private void loadConst(final MEM.Temp dst, final long value) {
 		if (isImm12(value)) {
-			emit("ADDI *d0, x0, " + value, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
+			emit("addi *d0, x0, " + value, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
 			return;
 		}
 
@@ -403,26 +403,26 @@ public class AsmGenerator {
 			if (!started) {
 				if (byteValue == 0 && shift > 0)
 					continue;
-				emit("ADDI *d0, x0, " + byteValue, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
+				emit("addi *d0, x0, " + byteValue, temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
 				started = true;
 				continue;
 			}
 
-			emit("SLLI *d0, *s0, 8", temps(dst), temps(dst), new Vector<MEM.Label>());
+			emit("slli *d0, *s0, 8", temps(dst), temps(dst), new Vector<MEM.Label>());
 			if (byteValue != 0)
-				emit("ADDI *d0, *s0, " + byteValue, temps(dst), temps(dst), new Vector<MEM.Label>());
+				emit("addi *d0, *s0, " + byteValue, temps(dst), temps(dst), new Vector<MEM.Label>());
 		}
 
 		if (!started)
-			emit("ADDI *d0, x0, 0", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
+			emit("addi *d0, x0, 0", temps(dst), new Vector<MEM.Temp>(), new Vector<MEM.Label>());
 	}
 
 	/**
 	 * Loads a label address using RV64 relocation operands.
 	 */
 	private void loadLabel(final MEM.Temp dst, final MEM.Label label) {
-		emit("LUI *d0, %hi(*l0)", temps(dst), new Vector<MEM.Temp>(), labels(label));
-		emit("ADDI *d0, *s0, %lo(*l0)", temps(dst), temps(dst), labels(label));
+		emit("lui *d0, %hi(*l0)", temps(dst), new Vector<MEM.Temp>(), labels(label));
+		emit("addi *d0, *s0, %lo(*l0)", temps(dst), temps(dst), labels(label));
 	}
 
 	/**
@@ -433,42 +433,42 @@ public class AsmGenerator {
 		final MEM.Temp snd = munchExpr(binOp.sndExpr);
 
 		switch (binOp.oper) {
-		case ADD -> emit("ADD *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case SUB -> emit("SUB *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case MUL -> emit("MUL *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case DIV -> emit("DIV *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case MOD -> emit("REM *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case LTH -> emit("SLT *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
-		case GTH -> emit("SLT *d0, *s1, *s0", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case ADD -> emit("add *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case SUB -> emit("sub *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case MUL -> emit("mul *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case DIV -> emit("div *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case MOD -> emit("rem *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case LTH -> emit("slt *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
+		case GTH -> emit("slt *d0, *s1, *s0", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
 		case LEQ -> {
 			final MEM.Temp tmp = new MEM.Temp();
-			emit("SLT *d0, *s1, *s0", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
-			emit("XORI *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
+			emit("slt *d0, *s1, *s0", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
+			emit("xori *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
 		}
 		case GEQ -> {
 			final MEM.Temp tmp = new MEM.Temp();
-			emit("SLT *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
-			emit("XORI *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
+			emit("slt *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
+			emit("xori *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
 		}
 		case EQU -> {
 			final MEM.Temp tmp = new MEM.Temp();
-			emit("XOR *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
-			emit("SLTIU *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
+			emit("xor *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
+			emit("sltiu *d0, *s0, 1", temps(dst), temps(tmp), new Vector<MEM.Label>());
 		}
 		case NEQ -> {
 			final MEM.Temp tmp = new MEM.Temp();
-			emit("XOR *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
-			emit("SLTU *d0, x0, *s0", temps(dst), temps(tmp), new Vector<MEM.Label>());
+			emit("xor *d0, *s0, *s1", temps(tmp), temps(fst, snd), new Vector<MEM.Label>());
+			emit("sltu *d0, x0, *s0", temps(dst), temps(tmp), new Vector<MEM.Label>());
 		}
 		case AND -> {
 			final MEM.Temp leftBool = boolValue(fst);
 			final MEM.Temp rightBool = boolValue(snd);
-			emit("AND *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
+			emit("and *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
 		}
 		case OR -> {
 			final MEM.Temp leftBool = boolValue(fst);
 			final MEM.Temp rightBool = boolValue(snd);
-			emit("OR *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
+			emit("or *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
 		}
 		}
 	}
@@ -478,7 +478,7 @@ public class AsmGenerator {
 	 */
 	private MEM.Temp boolValue(final MEM.Temp value) {
 		final MEM.Temp bool = new MEM.Temp();
-		emit("SLTU *d0, x0, *s0", temps(bool), temps(value), new Vector<MEM.Label>());
+		emit("sltu *d0, x0, *s0", temps(bool), temps(value), new Vector<MEM.Label>());
 		return bool;
 	}
 
@@ -489,8 +489,8 @@ public class AsmGenerator {
 		final MEM.Temp sub = munchExpr(unOp.subExpr);
 
 		switch (unOp.oper) {
-		case NEG -> emit("SUB *d0, x0, *s0", temps(dst), temps(sub), new Vector<MEM.Label>());
-		case NOT -> emit("SLTIU *d0, *s0, 1", temps(dst), temps(sub), new Vector<MEM.Label>());
+		case NEG -> emit("sub *d0, x0, *s0", temps(dst), temps(sub), new Vector<MEM.Label>());
+		case NOT -> emit("sltiu *d0, *s0, 1", temps(dst), temps(sub), new Vector<MEM.Label>());
 		}
 	}
 
@@ -504,16 +504,16 @@ public class AsmGenerator {
 		}
 
 		if (call.addr instanceof IMR.NAME name)
-			emit("JAL *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), new Vector<MEM.Label>(),
+			emit("jal *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), new Vector<MEM.Label>(),
 				ASM.ControlFlow.CALL);
 		else {
 			final MEM.Temp addr = munchExpr(call.addr);
-			emit("JALR *d0, 0(*s0)", temps(MEM.RA), temps(addr), new Vector<MEM.Label>(),
+			emit("jalr *d0, 0(*s0)", temps(MEM.RA), temps(addr), new Vector<MEM.Label>(),
 				new Vector<MEM.Label>(), ASM.ControlFlow.CALL);
 		}
 
 		if (dst != null)
-			emit("LD *d0, 0(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>());
+			emit("ld *d0, 0(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>());
 	}
 
 	/**
@@ -521,14 +521,14 @@ public class AsmGenerator {
 	 */
 	private void storeToStack(final MEM.Temp src, final long offset) {
 		if (isImm12(offset)) {
-			emit("SD *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>());
+			emit("sd *s0, " + offset + "(*s1)", new Vector<MEM.Temp>(), temps(src, MEM.SP), new Vector<MEM.Label>());
 			return;
 		}
 
 		final MEM.Temp offsetTemp = new MEM.Temp();
 		final MEM.Temp addr = new MEM.Temp();
 		loadConst(offsetTemp, offset);
-		emit("ADD *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>());
-		emit("SD *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
+		emit("add *d0, *s0, *s1", temps(addr), temps(MEM.SP, offsetTemp), new Vector<MEM.Label>());
+		emit("sd *s0, 0(*s1)", new Vector<MEM.Temp>(), temps(src, addr), new Vector<MEM.Label>());
 	}
 }

@@ -99,13 +99,13 @@ public class FinAsm extends Phase {
 	 */
 	private void emitBootstrap() {
 		lines.add("main:");
-		lines.add("  ADDI x2, x2, -16");
-		lines.add("  SD x0, 0(x2)");
-		lines.add("  JAL x1, _main");
-		lines.add("  LD " + SYSCALL_ARG + ", 0(x2)");
-		lines.add("  ADDI x2, x2, 16");
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 10");
-		lines.add("  ECALL");
+		lines.add("  addi x2, x2, -16");
+		lines.add("  sd x0, 0(x2)");
+		lines.add("  jal x1, _main");
+		lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
+		lines.add("  addi x2, x2, 16");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 10");
+		lines.add("  ecall");
 		lines.add("");
 	}
 
@@ -160,7 +160,7 @@ public class FinAsm extends Phase {
 		emitStore("x8", oldFpOffset);
 		emitStore("x1", returnAddressOffset);
 		emitSetFP(frameSize);
-		lines.add("  JAL x0, " + codeChunk.entryLabel.name);
+		lines.add("  jal x0, " + codeChunk.entryLabel.name);
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class FinAsm extends Phase {
 		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame, savedRegisters);
 		final long returnAddressOffset = returnAddressOffset(codeChunk.frame, savedRegisters);
 
-		lines.add("  SD " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x8)");
+		lines.add("  sd " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x8)");
 
 		for (int i = savedRegisters.size() - 1; i >= 0; i--)
 			emitLoad(savedRegisters.get(i), registerBase + 8L * i);
@@ -184,7 +184,7 @@ public class FinAsm extends Phase {
 		emitLoad("x1", returnAddressOffset);
 		emitLoad("x8", oldFpOffset);
 		emitAddToSP(frameSize);
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 	}
 
 	/**
@@ -197,75 +197,75 @@ public class FinAsm extends Phase {
 	private void emitRuntime() {
 		lines.add("_putint:");
 		emitRuntimeSave();
-		lines.add("  LD " + SYSCALL_ARG + ", 24(x2)");
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 1");
-		lines.add("  ECALL");
+		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 1");
+		lines.add("  ecall");
 		emitRuntimeRestore();
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_putchar:");
 		emitRuntimeSave();
-		lines.add("  LD " + SYSCALL_ARG + ", 24(x2)");
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 11");
-		lines.add("  ECALL");
+		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
+		lines.add("  ecall");
 		emitRuntimeRestore();
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_getint:");
 		emitRuntimeSave();
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 5");
-		lines.add("  ECALL");
-		lines.add("  SD " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 5");
+		lines.add("  ecall");
+		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_getchar:");
 		emitRuntimeSave();
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 12");
-		lines.add("  ECALL");
-		lines.add("  SD " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 12");
+		lines.add("  ecall");
+		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_new:");
 		emitRuntimeSave();
-		lines.add("  LD " + SYSCALL_ARG + ", 24(x2)");
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 9");
-		lines.add("  ECALL");
-		lines.add("  SD " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 9");
+		lines.add("  ecall");
+		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_del:");
-		lines.add("  JALR x0, 0(x1)");
+		lines.add("  jalr x0, 0(x1)");
 		lines.add("");
 
 		lines.add("_exit:");
-		lines.add("  ADDI " + SYSCALL_ID + ", x0, 10");
-		lines.add("  ECALL");
+		lines.add("  addi " + SYSCALL_ID + ", x0, 10");
+		lines.add("  ecall");
 	}
 
 	/**
 	 * Saves Ripes environment-call registers that are also available to register allocation.
 	 */
 	private void emitRuntimeSave() {
-		lines.add("  ADDI x2, x2, -16");
-		lines.add("  SD " + SYSCALL_ARG + ", 0(x2)");
-		lines.add("  SD " + SYSCALL_ID + ", 8(x2)");
+		lines.add("  addi x2, x2, -16");
+		lines.add("  sd " + SYSCALL_ARG + ", 0(x2)");
+		lines.add("  sd " + SYSCALL_ID + ", 8(x2)");
 	}
 
 	/**
 	 * Restores syscall registers saved by {@link #emitRuntimeSave()}.
 	 */
 	private void emitRuntimeRestore() {
-		lines.add("  LD " + SYSCALL_ID + ", 8(x2)");
-		lines.add("  LD " + SYSCALL_ARG + ", 0(x2)");
-		lines.add("  ADDI x2, x2, 16");
+		lines.add("  ld " + SYSCALL_ID + ", 8(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
+		lines.add("  addi x2, x2, 16");
 	}
 
 	/**
@@ -331,12 +331,12 @@ public class FinAsm extends Phase {
 	 */
 	private void emitSubFromSP(final long size) {
 		if (isImm12(-size)) {
-			lines.add("  ADDI x2, x2, " + (-size));
+			lines.add("  addi x2, x2, " + (-size));
 			return;
 		}
 
 		emitLoadConst(SCRATCH, size);
-		lines.add("  SUB x2, x2, " + SCRATCH);
+		lines.add("  sub x2, x2, " + SCRATCH);
 	}
 
 	/**
@@ -344,12 +344,12 @@ public class FinAsm extends Phase {
 	 */
 	private void emitAddToSP(final long size) {
 		if (isImm12(size)) {
-			lines.add("  ADDI x2, x2, " + size);
+			lines.add("  addi x2, x2, " + size);
 			return;
 		}
 
 		emitLoadConst(SCRATCH, size);
-		lines.add("  ADD x2, x2, " + SCRATCH);
+		lines.add("  add x2, x2, " + SCRATCH);
 	}
 
 	/**
@@ -357,12 +357,12 @@ public class FinAsm extends Phase {
 	 */
 	private void emitSetFP(final long frameSize) {
 		if (isImm12(frameSize)) {
-			lines.add("  ADDI x8, x2, " + frameSize);
+			lines.add("  addi x8, x2, " + frameSize);
 			return;
 		}
 
 		emitLoadConst(SCRATCH, frameSize);
-		lines.add("  ADD x8, x2, " + SCRATCH);
+		lines.add("  add x8, x2, " + SCRATCH);
 	}
 
 	/**
@@ -370,12 +370,12 @@ public class FinAsm extends Phase {
 	 */
 	private void emitStore(final String register, final long offset) {
 		if (isImm12(offset)) {
-			lines.add("  SD " + register + ", " + offset + "(x2)");
+			lines.add("  sd " + register + ", " + offset + "(x2)");
 			return;
 		}
 
 		emitFrameAddress(offset);
-		lines.add("  SD " + register + ", 0(" + SCRATCH + ")");
+		lines.add("  sd " + register + ", 0(" + SCRATCH + ")");
 	}
 
 	/**
@@ -383,12 +383,12 @@ public class FinAsm extends Phase {
 	 */
 	private void emitLoad(final String register, final long offset) {
 		if (isImm12(offset)) {
-			lines.add("  LD " + register + ", " + offset + "(x2)");
+			lines.add("  ld " + register + ", " + offset + "(x2)");
 			return;
 		}
 
 		emitFrameAddress(offset);
-		lines.add("  LD " + register + ", 0(" + SCRATCH + ")");
+		lines.add("  ld " + register + ", 0(" + SCRATCH + ")");
 	}
 
 	/**
@@ -396,7 +396,7 @@ public class FinAsm extends Phase {
 	 */
 	private void emitFrameAddress(final long offset) {
 		emitLoadConst(SCRATCH, offset);
-		lines.add("  ADD " + SCRATCH + ", x2, " + SCRATCH);
+		lines.add("  add " + SCRATCH + ", x2, " + SCRATCH);
 	}
 
 	/**
@@ -404,7 +404,7 @@ public class FinAsm extends Phase {
 	 */
 	private void emitLoadConst(final String register, final long value) {
 		if (isImm12(value)) {
-			lines.add("  ADDI " + register + ", x0, " + value);
+			lines.add("  addi " + register + ", x0, " + value);
 			return;
 		}
 
@@ -414,18 +414,18 @@ public class FinAsm extends Phase {
 			if (!started) {
 				if ((byteValue == 0) && (shift > 0))
 					continue;
-				lines.add("  ADDI " + register + ", x0, " + byteValue);
+				lines.add("  addi " + register + ", x0, " + byteValue);
 				started = true;
 				continue;
 			}
 
-			lines.add("  SLLI " + register + ", " + register + ", 8");
+			lines.add("  slli " + register + ", " + register + ", 8");
 			if (byteValue != 0)
-				lines.add("  ADDI " + register + ", " + register + ", " + byteValue);
+				lines.add("  addi " + register + ", " + register + ", " + byteValue);
 		}
 
 		if (!started)
-			lines.add("  ADDI " + register + ", x0, 0");
+			lines.add("  addi " + register + ", x0, 0");
 	}
 
 	/**
