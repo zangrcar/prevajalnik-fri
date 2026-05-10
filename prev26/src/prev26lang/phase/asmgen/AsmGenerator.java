@@ -293,7 +293,7 @@ public class AsmGenerator {
 		}
 
 		final MEM.Temp addr = munchExpr(jump.addr);
-		emit("jalr x0, 0(*s0)", new Vector<MEM.Temp>(), temps(addr), new Vector<MEM.Label>(),
+		emit("jalr x0, *s0, 0", new Vector<MEM.Temp>(), temps(addr), new Vector<MEM.Label>(),
 			new Vector<MEM.Label>(), ASM.ControlFlow.JUMP);
 	}
 
@@ -508,7 +508,7 @@ public class AsmGenerator {
 				ASM.ControlFlow.CALL);
 		else {
 			final MEM.Temp addr = munchExpr(call.addr);
-			emit("jalr *d0, 0(*s0)", temps(MEM.RA), temps(addr), new Vector<MEM.Label>(),
+			emit("jalr *d0, *s0, 0", temps(MEM.RA), temps(addr), new Vector<MEM.Label>(),
 				new Vector<MEM.Label>(), ASM.ControlFlow.CALL);
 		}
 

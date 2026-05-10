@@ -184,7 +184,7 @@ public class FinAsm extends Phase {
 		emitLoad("x1", returnAddressOffset);
 		emitLoad("x8", oldFpOffset);
 		emitAddToSP(frameSize);
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class FinAsm extends Phase {
 		lines.add("  addi " + SYSCALL_ID + ", x0, 1");
 		lines.add("  ecall");
 		emitRuntimeRestore();
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_putchar:");
@@ -210,7 +210,7 @@ public class FinAsm extends Phase {
 		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
 		lines.add("  ecall");
 		emitRuntimeRestore();
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_getint:");
@@ -219,7 +219,7 @@ public class FinAsm extends Phase {
 		lines.add("  ecall");
 		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_getchar:");
@@ -228,7 +228,7 @@ public class FinAsm extends Phase {
 		lines.add("  ecall");
 		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_new:");
@@ -238,11 +238,11 @@ public class FinAsm extends Phase {
 		lines.add("  ecall");
 		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_del:");
-		lines.add("  jalr x0, 0(x1)");
+		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_exit:");
