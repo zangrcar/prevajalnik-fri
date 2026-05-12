@@ -1,0 +1,83 @@
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+fun printString(s: ^char, length: int): void =
+    let
+        var n: int
+        var a: char
+    in
+        n = 0,
+        while n < length do
+            a = (((s as int) + n) as ^char)^,
+            n = n + 1,
+            putchar(a)
+        end
+    end
+
+fun printLine(s: ^char, length: int, value: int): void =
+    printString(s, length),
+    putint(value),
+    putchar('\x0A')
+
+fun main() : int =
+    let
+        var base : int
+        var step : int
+        var result1 : int
+        var result2 : int
+
+        fun makeSum(seed : int) : int =
+            let
+                var offset : int
+
+                fun addWithLinks(delta : int) : int =
+                    let
+                        var local : int
+
+                        fun deep(x : int) : int =
+                            base + step + seed + offset + delta + local + x
+
+                        fun walk(count : int) : int =
+                            let
+                                var acc : int
+                                var i : int
+                            in
+                                acc = 0,
+                                i = 0,
+                                while i < count do
+                                    acc = acc + deep(i),
+                                    i = i + 1
+                                end,
+                                acc
+                            end
+                    in
+                        local = 7,
+                        walk(3)
+                    end
+            in
+                offset = seed * 2,
+                addWithLinks(5)
+            end
+
+        fun changeOuter(v : int) : int =
+            let
+                var saved : int
+
+                fun bump(extra : int) : int =
+                    base = base + extra,
+                    base + step + v + saved
+            in
+                saved = base,
+                bump(v)
+            end
+    in
+        base = 10,
+        step = 3,
+        result1 = makeSum(4),
+        result2 = changeOuter(6),
+        printLine("sum through links = ", 20, result1),
+        printLine("changed base = ", 15, result2),
+        printLine("final base = ", 13, base),
+		printLine("return value = ", 15, result1 + result2 + base),
+		0
+	end
