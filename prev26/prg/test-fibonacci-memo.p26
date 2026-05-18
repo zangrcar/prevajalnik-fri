@@ -1,0 +1,85 @@
+fun getint() : int
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+var n : int
+var i : int
+var total : int
+var current : int
+var memo : [44]int
+
+fun printString(s: ^char, length: int): void =
+    let
+        var n: int
+        var a: char
+    in
+        n = 0,
+        while n < length do
+            a = (((s as int) + n) as ^char)^,
+            n = n + 1,
+            putchar(a)
+        end
+    end
+
+fun fib(k : int) : int =
+    let
+        var value : int
+    in
+        if memo[k] != -1 then
+            value = memo[k]
+        else
+            if k <= 1 then
+                value = k
+            else
+                value = fib(k - 1) + fib(k - 2)
+            end,
+            memo[k] = value
+        end,
+        value
+    end
+
+fun main() : int =
+    printString("How many Fibonacci numbers? ", 28),
+    n = getint(),
+    putchar('\x0A'),
+
+    if n < 0 then
+        n = 0
+    end,
+    if n > 44 then
+        n = 44
+    end,
+
+    i = 0,
+    while i < 44 do
+        memo[i] = -1,
+        i = i + 1
+    end,
+
+    printString("Fibonacci sequence:", 19),
+    putchar('\x0A'),
+    i = 0,
+    total = 0,
+    while i < n do
+        current = fib(i),
+        putint(current),
+        total = total + current,
+        if i < n - 1 then
+            putchar('\x20')
+        end,
+        i = i + 1
+    end,
+    putchar('\x0A'),
+
+    if n > 0 then
+        printString("Memoized last value:", 20),
+        putchar('\x20'),
+        putint(fib(n - 1)),
+        putchar('\x0A')
+    end,
+
+    printString("Sum:", 4),
+    putchar('\x20'),
+    putint(total),
+    putchar('\x0A'),
+    0

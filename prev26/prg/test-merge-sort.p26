@@ -1,0 +1,117 @@
+fun getint() : int
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+var n : int
+var arr : [100]int
+var tmp : [100]int
+
+fun printString(s: ^char, length: int): void =
+    let
+        var n: int
+        var a: char
+    in
+        n = 0,
+        while n < length do
+            a = (((s as int) + n) as ^char)^,
+            n = n + 1,
+            putchar(a)
+        end
+    end
+
+fun printArray(count : int) : void =
+    let
+        var i : int
+    in
+        i = 0,
+        while i < count do
+            putint(arr[i]),
+            if i < count - 1 then
+                putchar('\x20')
+            end,
+            i = i + 1
+        end,
+        putchar('\x0A')
+    end
+
+fun merge(left : int, mid : int, right : int) : void =
+    let
+        var i : int
+        var j : int
+        var k : int
+    in
+        i = left,
+        j = mid + 1,
+        k = left,
+        while (i <= mid) and (j <= right) do
+            if arr[i] <= arr[j] then
+                tmp[k] = arr[i],
+                i = i + 1
+            else
+                tmp[k] = arr[j],
+                j = j + 1
+            end,
+            k = k + 1
+        end,
+        while i <= mid do
+            tmp[k] = arr[i],
+            i = i + 1,
+            k = k + 1
+        end,
+        while j <= right do
+            tmp[k] = arr[j],
+            j = j + 1,
+            k = k + 1
+        end,
+        k = left,
+        while k <= right do
+            arr[k] = tmp[k],
+            k = k + 1
+        end
+    end
+
+fun mergeSort(left : int, right : int) : void =
+    let
+        var mid : int
+    in
+        if left < right then
+            mid = (left + right) / 2,
+            mergeSort(left, mid),
+            mergeSort(mid + 1, right),
+            merge(left, mid, right)
+        end
+    end
+
+fun main() : int =
+    let
+        var i : int
+    in
+        printString("Input the array length:", 23),
+        n = getint(),
+        putchar('\x0A'),
+
+        if n < 0 then
+            n = 0
+        end,
+        if n > 100 then
+            n = 100
+        end,
+
+        printString("Input the array:", 16),
+        putchar('\x0A'),
+        i = 0,
+        while i < n do
+            arr[i] = getint(),
+            i = i + 1
+        end,
+        putchar('\x0A'),
+
+        if n > 0 then
+            mergeSort(0, n - 1)
+        end,
+
+        printString("Sorted by merge sort:", 21),
+        putchar('\x0A'),
+        printArray(n),
+        0
+    end
