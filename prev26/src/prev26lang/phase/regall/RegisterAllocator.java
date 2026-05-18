@@ -207,7 +207,7 @@ public class RegisterAllocator {
 			rewritten.addAll(rewrite.after);
 		}
 
-		return new ASM.CodeChunk(spillFrame(), rewritten);
+		return new ASM.CodeChunk(spillFrame(), codeChunk.entryLabel, codeChunk.exitLabel, rewritten);
 	}
 
 	/**

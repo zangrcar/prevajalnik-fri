@@ -149,8 +149,8 @@ public class FinAsm extends Phase {
 		final long registerBase,
 		final long frameSize
 	) {
-		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame, savedRegisters);
-		final long returnAddressOffset = returnAddressOffset(codeChunk.frame, savedRegisters);
+		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame);
+		final long returnAddressOffset = returnAddressOffset(codeChunk.frame);
 
 		emitSubFromSP(frameSize);
 
@@ -173,8 +173,8 @@ public class FinAsm extends Phase {
 		final long frameSize,
 		final LinkedHashMap<MEM.Temp, String> registerMap
 	) {
-		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame, savedRegisters);
-		final long returnAddressOffset = returnAddressOffset(codeChunk.frame, savedRegisters);
+		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame);
+		final long returnAddressOffset = returnAddressOffset(codeChunk.frame);
 
 		lines.add("  sd " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x8)");
 
@@ -302,21 +302,21 @@ public class FinAsm extends Phase {
 	 * Computes where saved physical registers start inside the frame.
 	 */
 	private long registerSaveBase(final MEM.Frame frame) {
-		return frame.argsSize + spillSize(frame);
+		return frame.argsSize + 16 + spillSize(frame);
 	}
 
 	/**
 	 * Computes where the old frame pointer is saved inside the frame.
 	 */
-	private long oldFramePointerOffset(final MEM.Frame frame, final Vector<String> savedRegisters) {
-		return registerSaveBase(frame) + 8L * savedRegisters.size();
+	private long oldFramePointerOffset(final MEM.Frame frame) {
+		return frame.argsSize;
 	}
 
 	/**
 	 * Computes where the return address is saved inside the frame.
 	 */
-	private long returnAddressOffset(final MEM.Frame frame, final Vector<String> savedRegisters) {
-		return oldFramePointerOffset(frame, savedRegisters) + 8;
+	private long returnAddressOffset(final MEM.Frame frame) {
+		return frame.argsSize + 8;
 	}
 
 	/**
