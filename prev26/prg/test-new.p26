@@ -1,0 +1,10 @@
+fun new(size : int) : ^int
+
+fun main() : int =
+    let
+        var p : ^int
+    in
+        p = new(sizeof int),
+        p^ = 42,
+        p^
+    end

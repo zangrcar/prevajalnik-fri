@@ -1,0 +1,17 @@
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+typ pair = (n : int, ch : char)
+
+fun main() : int =
+    let
+        var p : pair
+    in
+        p.n = 42,
+        p.ch = '\x41',
+        putint(p.n),
+        putchar('\x20'),
+        putchar(p.ch),
+        putchar('\x0A'),
+        0
+    end
