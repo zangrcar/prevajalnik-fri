@@ -243,8 +243,7 @@ public class Compiler {
 
 					// === ABSTRACT SYNTAX ===
 					try (Abstr abstr = new Abstr()) {
-						AstBuilder builder = new AstBuilder();
-						Abstr.tree = (AST.Nodes<AST.FullDefn>) builder.visitSource(SynAn.tree);
+						Abstr.tree = SynAn.tree.ast;
 						Abstr.locAttr.lock();
 						SynAn.tree = null;
 						(new Abstr.Logger(abstr.xmlLogger)).visit(Abstr.tree);
