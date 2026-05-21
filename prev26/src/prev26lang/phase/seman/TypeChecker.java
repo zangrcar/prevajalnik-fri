@@ -10,6 +10,15 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
     /** Have we already checked the program root for function main? */
     private boolean checkedProgramRoot = false;
 
+	/** The function whose body/signature is currently being checked. */
+	private final Deque<AST.FunDefn> funStack = new ArrayDeque<AST.FunDefn>();
+
+	/** The immediately enclosing function of each function definition. */
+	private final Map<AST.FunDefn, AST.FunDefn> funParent = new IdentityHashMap<AST.FunDefn, AST.FunDefn>();
+
+	/** The function that owns each variable or parameter definition; null means global. */
+	private final Map<AST.Defn, AST.FunDefn> varOwner = new IdentityHashMap<AST.Defn, AST.FunDefn>();
+
     public TypeChecker() {
     }
 
@@ -384,6 +393,52 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		throw new Report.Error(nodes, "Program must define function main.");
     }
 
+	private AST.FunDefn currentFun() {
+		return funStack.peek();
+	}
+
+	private void enterFun(final AST.FunDefn funDefn) {
+		funParent.put(funDefn, currentFun());
+		funStack.push(funDefn);
+		for (AST.ParDefn parDefn : funDefn.pars)
+			varOwner.put(parDefn, funDefn);
+	}
+
+	private void leaveFun(final AST.FunDefn funDefn) {
+		if (funStack.isEmpty() || funStack.peek() != funDefn)
+			throw new Report.InternalError();
+		funStack.pop();
+	}
+
+	private void predeclareVarOwners(final AST.Nodes<? extends AST.Node> nodes, final AST.FunDefn owner) {
+		for (AST.Node node : nodes) {
+			if (node instanceof AST.VarDefn varDefn)
+				varOwner.put(varDefn, owner);
+			else if (node instanceof AST.FunDefn funDefn)
+				funParent.put(funDefn, owner);
+		}
+	}
+
+	private void checkVariableAccess(final AST.NameExpr nameExpr, final AST.Defn defn) {
+		final AST.FunDefn current = currentFun();
+		if (current == null)
+			return;
+
+		if (!varOwner.containsKey(defn))
+			throw new Report.InternalError();
+
+		final AST.FunDefn owner = varOwner.get(defn);
+		if (owner == current)
+			return;
+
+		final AST.FunDefn parent = funParent.get(current);
+		if (owner != null && owner == parent)
+			return;
+
+		throw new Report.Error(nameExpr,
+			"Function can only access its own variables and variables of its immediately enclosing function.");
+	}
+
     // ===== ROOT =====
 
     @Override
@@ -394,6 +449,9 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
 		if (isProgramRoot)
 			checkedProgramRoot = true;
+
+		if (isProgramRoot)
+			predeclareVarOwners(nodes, null);
 
         for (AST.Node node : nodes) {
 			if (node != null)
@@ -415,6 +473,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.VarDefn varDefn, Object arg) {
+		varOwner.put(varDefn, currentFun());
         varDefn.type.accept(this, arg);
 		TYP.Type varType = requireType(varDefn.type);
     	checkVarType(varDefn, varType);
@@ -423,34 +482,46 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.DefFunDefn defFunDefn, Object arg) {
-        for (AST.ParDefn parDefn : defFunDefn.pars)
-			parDefn.accept(this, arg);
+		enterFun(defFunDefn);
+		try {
+			for (AST.ParDefn parDefn : defFunDefn.pars)
+				parDefn.accept(this, arg);
 
-		defFunDefn.type.accept(this, arg);
-		defFunDefn.expr.accept(this, arg);
+			defFunDefn.type.accept(this, arg);
+			defFunDefn.expr.accept(this, arg);
 
-		TYP.FunType funType = declaredFunType(defFunDefn);
-		checkFunResultType(defFunDefn, funType.resType);
+			TYP.FunType funType = declaredFunType(defFunDefn);
+			checkFunResultType(defFunDefn, funType.resType);
 
-		TYP.Type bodyType = requireExprType(defFunDefn.expr);
-		requireEquiv(defFunDefn, bodyType, funType.resType);
+			TYP.Type bodyType = requireExprType(defFunDefn.expr);
+			requireEquiv(defFunDefn, bodyType, funType.resType);
+		} finally {
+			leaveFun(defFunDefn);
+		}
         return null;
     }
 
     @Override
     public Object visit(AST.ExtFunDefn extFunDefn, Object arg) {
-        for (AST.ParDefn parDefn : extFunDefn.pars)
-			parDefn.accept(this, arg);
+		enterFun(extFunDefn);
+		try {
+			for (AST.ParDefn parDefn : extFunDefn.pars)
+				parDefn.accept(this, arg);
 
-		extFunDefn.type.accept(this, arg);
+			extFunDefn.type.accept(this, arg);
 
-		TYP.FunType funType = declaredFunType(extFunDefn);
-		checkFunResultType(extFunDefn, funType.resType);
+			TYP.FunType funType = declaredFunType(extFunDefn);
+			checkFunResultType(extFunDefn, funType.resType);
+		} finally {
+			leaveFun(extFunDefn);
+		}
         return null;
     }
 
     @Override
     public Object visit(AST.ParDefn parDefn, Object arg) {
+		if (!varOwner.containsKey(parDefn))
+			varOwner.put(parDefn, currentFun());
         parDefn.type.accept(this, arg);
 
 		TYP.Type parType = requireType(parDefn.type);
@@ -532,6 +603,9 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.NameExpr nameExpr, Object arg) {
+		final AST.Defn defn = SemAn.defAtAttr.get(nameExpr);
+		if (defn instanceof AST.VarDefn || defn instanceof AST.ParDefn)
+			checkVariableAccess(nameExpr, defn);
         requireExprType(nameExpr);
         return null;
     }
@@ -722,6 +796,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 
     @Override
     public Object visit(AST.LetExpr letExpr, Object arg) {
+		predeclareVarOwners(letExpr.defns, currentFun());
         letExpr.defns.accept(this, arg);
     	letExpr.expr.accept(this, arg);
         return null;

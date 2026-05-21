@@ -1,0 +1,21 @@
+fun putint(i: int): void
+var b: int
+
+fun main(): int = 
+	let
+		var a: int
+		var c: (i: int, c: char)
+		fun g(): int =
+			let 
+				fun h(): int = 4
+			in
+				c.i = 8,
+				c.c = 'c',
+				h(),
+				putint(a)
+			end,
+			0
+	in
+		a = 3,
+		g()
+	end
