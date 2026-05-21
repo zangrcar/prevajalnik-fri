@@ -1,8 +1,18 @@
-// vnaprejsnje deklaracije
-typ a = b
-typ b = int
+typ c = {i: int}
+typ d = {i: int, c: char}
 
+var a: d
+var b: c
 
-fun f() : int = g()
-fun g() : int = 1
-fun main () : int = 0
+fun main () : int = 
+	a.i = 6,
+	a.c = 'c',
+	b.i = 9,
+	putint('c' as int),
+	putchar('\x20'),
+	putint(a.i + (a.c as int)),
+	putchar('\x0A'),
+	0
+
+fun putint(i: int): void
+fun putchar(c : char) : void
