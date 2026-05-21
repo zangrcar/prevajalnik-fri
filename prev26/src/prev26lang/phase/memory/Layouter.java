@@ -542,6 +542,7 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
             layoutLocalVar(varDefn, currentFun());
         else
             layoutGlobalVar(varDefn);
+        varDefn.type.accept(this, arg);
         return null;
     }
 
