@@ -105,10 +105,17 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		}
 
 		if (actual instanceof TYP.UniType uniType) {
-			long size = 0;
-			for (final TYP.Type compType : uniType.compTypes)
-				size = Math.max(size, slotSizeOf(compType));
-			return size;
+			long max = 0;
+			boolean firstInt = false;
+			for(int i = 0; i < uniType.compTypes.size(); i++) {
+				if (i == 0 && uniType.compTypes.get(0).actualType() instanceof  TYP.IntType) {
+					firstInt = true;
+					continue;
+				}
+				TYP.Type compType = uniType.compTypes.get(i);
+				max = Math.max(max, slotSizeOf(compType));
+			}
+            return firstInt ? max + 8 : max;
 		}
 
 		throw new Report.InternalError();

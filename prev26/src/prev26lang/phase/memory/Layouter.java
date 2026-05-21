@@ -95,12 +95,14 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     private static final class RecCtx {
         final boolean isStruct;
+		final boolean firstUnionInt;
 
         long nextOffset;   // used for struct fields
         long maxSize;      // used for union size
 
-        RecCtx(boolean isStruct) {
+        RecCtx(boolean isStruct, boolean firstUnionInt) {
             this.isStruct = isStruct;
+			this.firstUnionInt = firstUnionInt;
             this.nextOffset = 0;
             this.maxSize = 0;
         }
@@ -260,10 +262,17 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
         }
 
         if (actual instanceof TYP.UniType uniType) {
-            long max = 0;
-            for (TYP.Type compType : uniType.compTypes)
-                max = Math.max(max, slotSizeOf(compType));
-            return max;
+			long max = 0;
+			boolean firstInt = false;
+			for(int i = 0; i < uniType.compTypes.size(); i++) {
+				if (i == 0 && uniType.compTypes.get(0).actualType() instanceof  TYP.IntType) {
+					firstInt = true;
+					continue;
+				}
+				TYP.Type compType = uniType.compTypes.get(i);
+				max = Math.max(max, slotSizeOf(compType));
+			}
+            return firstInt ? max + 8 : max;
         }
 
         throw new Report.InternalError();
@@ -425,14 +434,19 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     private void layoutComponent(final AST.CompDefn compDefn, final RecCtx ctx) {
         final long size = slotSizeOf(compDefn.type);
-
+		final long offset = ctx.nextOffset;
         if (ctx.isStruct) {
-            final long offset = ctx.nextOffset;
             Memory.accessAttr.put(compDefn, new MEM.RelAccess(size, offset, -1));
             ctx.nextOffset += size;
         } else {
-            Memory.accessAttr.put(compDefn, new MEM.RelAccess(size, 0, -1));
-            ctx.maxSize = Math.max(ctx.maxSize, size);
+			final boolean isFirstInt = ctx.nextOffset == 0 && ctx.firstUnionInt;
+            Memory.accessAttr.put(compDefn, new MEM.RelAccess(size, offset, -1));
+			if(requireType(compDefn.type).actualType() instanceof TYP.IntType && offset == 0) 
+				ctx.nextOffset = 8;
+            ctx.maxSize = Math.max(
+				ctx.maxSize, 
+				isFirstInt || !ctx.firstUnionInt ? size : size + 8
+			);
         }
     }
 
@@ -611,7 +625,7 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     @Override
     public Object visit(AST.StrType strType, Object arg) {
-        recStack.push(new RecCtx(true));
+        recStack.push(new RecCtx(true, false));
         strType.comps.accept(this, arg);
         recStack.pop();
         return null;
@@ -623,7 +637,8 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     @Override
     public Object visit(AST.UniType uniType, Object arg) {
-        recStack.push(new RecCtx(false));
+		TYP.Type firstCompType = requireType(uniType.comps.get(0).type).actualType();
+        recStack.push(new RecCtx(false, firstCompType instanceof TYP.IntType));
         uniType.comps.accept(this, arg);
         recStack.pop();
         return null;
