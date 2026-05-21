@@ -102,11 +102,30 @@ public class FinAsm extends Phase {
 		lines.add("  addi x2, x2, -16");
 		lines.add("  sd x0, 0(x2)");
 		lines.add("  jal x1, _main");
-		lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
+
+		// emitPrintString("Program exited with value: ");
+
+		// lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
+		// lines.add("  addi " + SYSCALL_ID + ", x0, 1");
+		// lines.add("  ecall");
+		// emitPrintChar('\n');
+		
 		lines.add("  addi x2, x2, 16");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 10");
 		lines.add("  ecall");
 		lines.add("");
+	}
+
+	/* For printing in bootstrap */
+	private void emitPrintChar(final char c) {
+		lines.add("  addi " + SYSCALL_ARG + ", x0, " + (int)c);
+		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
+		lines.add("  ecall");
+	}
+
+	private void emitPrintString(final String text) {
+		for (int i = 0; i < text.length(); i++)
+			emitPrintChar(text.charAt(i));
 	}
 
 	/**

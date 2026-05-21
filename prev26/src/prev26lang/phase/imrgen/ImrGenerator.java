@@ -595,11 +595,14 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		callExpr.funExpr.accept(this, arg);
 		callExpr.argExprs.accept(this, arg);
 
-		putExprIR(callExpr, new IMR.CALL(
-			requireExprIR(callExpr.funExpr), 
-			callArgOffsets(callExpr), 
-			callArgs(callExpr)
-		));
+		putExprIR(
+			callExpr, 
+			new IMR.CALL(
+				requireExprIR(callExpr.funExpr), 
+				callArgOffsets(callExpr), 
+				callArgs(callExpr)
+			)
+		);
 		return null;
 	}
 

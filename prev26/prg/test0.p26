@@ -1,13 +1,21 @@
-fun main () : int =
-	s = "tes",
-	a = 0,
-	while a < 10 do
-		a = a + 1
+typ unary = (: int : int)
+var global_fun : (: int : int)
+
+fun putint(i : int) : void
+
+fun inc(x : int) : int =
+    x + 1
+
+fun choose_inc() : (: int : int) =
+    inc
+
+fun main(): int =
+	global_fun = inc,
+	global_fun = choose_inc(),
+	let 
+		var a: int
+	in
+		a = global_fun(5),
+		putint(a)
 	end,
-	0
-var d: {c: int, d: char}
-var c: [17]int
-var b: [13]bool
-var bb: bool
-var a : int
-var s: ^char
+	global_fun(5)

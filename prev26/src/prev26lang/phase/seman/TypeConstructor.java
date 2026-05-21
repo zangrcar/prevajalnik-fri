@@ -351,6 +351,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
         return null;
     }
 
+	/* DefFunDefn does not send it through, parameters are treated in declareFunDefn() */
     // @Override
     // public Object visit(AST.ParDefn parDefn, Phase phase) {
     //     switch (phase) {

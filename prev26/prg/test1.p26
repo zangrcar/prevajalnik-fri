@@ -1,6 +1,19 @@
-fun main () : int = 
-	g(3),
+fun putint(i:int):void
+fun putchar(c:char):void
+
+fun g(i:int):int = 
+	let
+		var a : int
+		fun j(j:int):int=j+1
+	in
+		a = 3,
+		j(a+1)
+	end
+
+var h: (:int:int)
+
+fun main(): int =
+	h = g,
+	h(1),
+	g(1),
 	0
-
-fun g(x: int) : int = x + 1
-
