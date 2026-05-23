@@ -1,0 +1,6 @@
+fun putint(i : int) : void
+fun putchar(c : char) : void
+fun getint() : int
+fun getchar() : char
+
+fun main(): int = 0
