@@ -1144,16 +1144,20 @@ public class AST {
 		/** The inner expression. */
 		public final Expr expr;
 
+		/** Until expr */
+		public final boolean isUntil;
+
 		/**
 		 * Constructs a while expression.
 		 * 
 		 * @param condExpr The condition.
 		 * @param expr     The inner expression.
 		 */
-		public WhileExpr(final Expr condExpr, final Expr expr) {
+		public WhileExpr(final Expr condExpr, final Expr expr, final boolean isUntil) {
 			super();
 			this.condExpr = condExpr;
 			this.expr = expr;
+			this.isUntil = isUntil;
 		}
 
 		@Override

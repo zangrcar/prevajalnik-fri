@@ -413,6 +413,7 @@ e_basic returns [AST.Expr ast]
     | e_sizeof { $ast = $e_sizeof.ast; }
     | e_if { $ast = $e_if.ast; }
     | e_while { $ast = $e_while.ast; }
+	| e_until { $ast = $e_until.ast; }
     | e_let { $ast = $e_let.ast; }
     | LP expr_list RP { $ast = bind(packExprs($expr_list.exprs, $expr_list.ctx), $ctx); };
 
@@ -443,7 +444,11 @@ e_let returns [AST.LetExpr ast]
 
 e_while returns [AST.WhileExpr ast]
     : WHILE e DO expr_list END
-      { $ast = bind(new AST.WhileExpr($e.ast, packExprs($expr_list.exprs, $expr_list.ctx)), $ctx); };
+      { $ast = bind(new AST.WhileExpr($e.ast, packExprs($expr_list.exprs, $expr_list.ctx), false), $ctx); };
+
+e_until returns [AST.WhileExpr ast]
+    : UNTIL e DO expr_list END
+      { $ast = bind(new AST.WhileExpr($e.ast, packExprs($expr_list.exprs, $expr_list.ctx), true), $ctx); };
 
 e_if returns [AST.Expr ast]
     : IF e THEN expr_list if_tail END

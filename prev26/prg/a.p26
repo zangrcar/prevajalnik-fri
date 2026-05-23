@@ -3,4 +3,9 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+var i: int
+fun main(): int = 
+	i = 0,
+	until i==10 do i = i + 1 end,
+	putint(i),
+	0

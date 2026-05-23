@@ -90,6 +90,7 @@ SIZEOF : 'sizeof';
 THEN : 'then';
 TRUE : 'true';
 TYP : 'typ';
+UNTIL: 'until';
 VAR : 'var';
 VOID : 'void';
 WHILE : 'while';

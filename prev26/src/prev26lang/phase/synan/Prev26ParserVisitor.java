@@ -350,6 +350,12 @@ public interface Prev26ParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitE_while(Prev26Parser.E_whileContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link Prev26Parser#e_until}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitE_until(Prev26Parser.E_untilContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link Prev26Parser#e_if}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

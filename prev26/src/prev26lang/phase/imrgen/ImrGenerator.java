@@ -736,7 +736,11 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 		final Vector<IMR.Stmt> body = stmts();
 		body.add(new IMR.LABEL(condLabel));
-		body.add(new IMR.CJUMP(requireExprIR(whileExpr.condExpr), new IMR.NAME(bodyLabel), new IMR.NAME(endLabel)));
+		if (whileExpr.isUntil) {
+			body.add(new IMR.CJUMP(requireExprIR(whileExpr.condExpr), new IMR.NAME(endLabel), new IMR.NAME(bodyLabel)));
+		} else {
+			body.add(new IMR.CJUMP(requireExprIR(whileExpr.condExpr), new IMR.NAME(bodyLabel), new IMR.NAME(endLabel)));
+		}
 		body.add(new IMR.LABEL(bodyLabel));
 		body.add(new IMR.ESTMT(requireExprIR(whileExpr.expr)));
 		body.add(new IMR.JUMP(new IMR.NAME(condLabel)));
