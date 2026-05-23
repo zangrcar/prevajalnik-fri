@@ -94,6 +94,12 @@ VAR : 'var';
 VOID : 'void';
 WHILE : 'while';
 POWER : '^';
+
+DOUBLEP : '((' NOPR '))'
+	{
+		lexError("Two direct parantheses are not allowed!");
+	};
+
 LB : '{';
 RB : '}';
 LSB : '[';
@@ -135,6 +141,7 @@ fragment DQUOTE : '\\"';
 fragment HEXCHAR : '\\x'([0-9A-F][0-9A-F]);
 fragment NOQUOTE : [ -&(-[\]-~];
 fragment NODQUOTE : [ -!#-[\]-~];
+fragment NOPR : [ -(*-~];
 
 ANY : 
 	.
