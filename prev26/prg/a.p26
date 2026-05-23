@@ -1,0 +1,23 @@
+fun main(): int = 
+	let
+		var a: int
+		fun g(): int = 3
+	in 
+		g(),
+		a = 4,
+		let
+			var b: int
+			fun h(): int = 
+				let
+					var c: int
+				in
+					c = 4
+				end,
+				0
+		in
+			b = g(),
+			h(),
+			0
+		end
+	end,
+	0

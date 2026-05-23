@@ -150,11 +150,17 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 
 	@Override
 	public Object visit(AST.LetExpr letExpr, Phase phase) {
-		symbTable.newScope();
+		boolean closeScope = false;
+		if (!symbTable.letScopes.getFirst()) {
+			closeScope = true;
+			symbTable.newScope(true);
+		}
 		declareDefs(letExpr.defns);
 		resolveDefs(letExpr.defns);
 		letExpr.expr.accept(this, phase);
-		symbTable.oldScope();
+		if (closeScope) {
+			symbTable.oldScope();
+		}
 
 		return null;
 	}
@@ -225,6 +231,8 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 		/** Whether the symbol table can no longer be modified or not. */
 		private boolean lock;
 
+		private LinkedList<Boolean> letScopes;
+
 		/**
 		 * Constructs a new symbol table.
 		 */
@@ -233,6 +241,7 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 			scopes = new LinkedList<LinkedList<String>>();
 			currDepth = 0;
 			lock = false;
+			letScopes = new LinkedList<Boolean>();
 			newScope();
 		}
 
@@ -310,11 +319,16 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 		 * constructed scope becomes the currently active scope.
 		 */
 		public void newScope() {
+			newScope(false);
+		}
+
+		public void newScope(boolean fromLetExpr) {
 			if (lock)
 				throw new Report.InternalError();
 
 			currDepth++;
 			scopes.addFirst(new LinkedList<String>());
+			letScopes.addFirst(fromLetExpr);
 		}
 
 		/**
@@ -333,6 +347,7 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 				allDefnsOfAllNames.get(name).removeFirst();
 			}
 			scopes.removeFirst();
+			letScopes.removeFirst();
 			currDepth--;
 		}
 
