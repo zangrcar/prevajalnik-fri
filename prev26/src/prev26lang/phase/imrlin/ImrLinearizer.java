@@ -134,6 +134,11 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 			callAddr = new IMR.TEMP(addrTemp);
 		}
 
+		final CanonExpr staticLink = canonExpr(call.staticLink);
+		prefix.addAll(staticLink.stmts);
+		final MEM.Temp staticLinkTemp = new MEM.Temp();
+		prefix.add(new IMR.MOVE(new IMR.TEMP(staticLinkTemp), staticLink.expr));
+
 		final Vector<IMR.Expr> args = new Vector<IMR.Expr>();
 		for (final IMR.Expr arg : call.args) {
 			final CanonExpr canonArg = canonExpr(arg);
@@ -143,7 +148,7 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 			args.add(new IMR.TEMP(argTemp));
 		}
 
-		return new CanonCall(prefix, new IMR.CALL(callAddr, call.offs, args));
+		return new CanonCall(prefix, new IMR.CALL(callAddr, new IMR.TEMP(staticLinkTemp), call.offs, args));
 	}
 
 	/** Canonicalizes an expression and returns prefix statements plus the pure expression. */

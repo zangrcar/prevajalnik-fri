@@ -34,20 +34,16 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
     private static final long ALIGNMENT = 8;
 
     /**
-     * Fixed part of a frame that is always present, excluding locals and
-     * outgoing-argument area.
+     * Fixed part of a frame: saved static link, old frame pointer, and return
+     * address, excluding locals and outgoing-argument area.
      */
-    private static final long FIXED_FRAME_SIZE = 2*ADDRESS_SIZE;
-
-    /**
-     * Size reserved in every outgoing call for the static link.
-     */
-    private static final long STATIC_LINK_SIZE = ADDRESS_SIZE;
+    private static final long FIXED_FRAME_SIZE = 3 * ADDRESS_SIZE;
 
 	/**
-     * Offset of the first incoming parameter relative to FP.
+     * Offset of the first incoming parameter relative to FP. The static link is
+     * passed through a register, so it no longer occupies the first parameter slot.
      */
-    private static final long FIRST_PARAM_OFFSET = STATIC_LINK_SIZE;
+    private static final long FIRST_PARAM_OFFSET = 0;
 
     // --------------------------------------------------------------------
     //  Context objects
@@ -81,7 +77,7 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
             this.hasFrame = hasFrame;
 
             this.nextParOffset = FIRST_PARAM_OFFSET;
-            this.nextLocalOffset = 0;
+            this.nextLocalOffset = -ADDRESS_SIZE;
             this.locsSize = 0;
             this.maxArgsSize = 0;
         }
@@ -500,13 +496,10 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      * Computes how much outgoing call-record space is needed for one call.
      *
      * Skeleton policy:
-     *  - reserve space for static link
      *  - reserve one slot per argument
      */
     private long callAreaSize(final AST.CallExpr callExpr) {
         long size = 0;
-
-        size += STATIC_LINK_SIZE;
 
         // Reserve slots for actual arguments.
         for (AST.Expr argExpr : callExpr.argExprs) {

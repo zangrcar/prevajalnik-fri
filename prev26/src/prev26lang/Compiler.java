@@ -33,7 +33,7 @@ public class Compiler {
 			Map.entry("--logged-phase", "all"), // -: the name of the logged phase (or none or all)
 			Map.entry("--xml", ""), // -------------: the name of xml files (without phase name and extension)
 			Map.entry("--xsl", "../lib/xsl/"), // --: the directory with the xsl templates for the logs
-			Map.entry("--num-regs", "26"), // -------: number of allocatable registers
+			Map.entry("--num-regs", "25"), // -------: number of allocatable registers
 			Map.entry("--dev-mode", "on") // -------: development mode (on or off)
 	));
 
@@ -304,11 +304,7 @@ public class Compiler {
 							for (final IMR.Stmt stmt : codeChunk.stmts())
 								System.out.println("  " + stmt);
 							}
-						Interpreter interpreter = new Interpreter(dataChunks, linCodeChunks);
-						if (linCodeChunks.isEmpty())
-							System.out.println("IMRLIN: interpreter execution skipped because no code chunks were generated.");
-						else
-							System.out.printf("IMRLIN: program returned %d%n", interpreter.run("_main"));
+						System.out.println("IMRLIN: interpreter execution skipped because SL/RV are passed through a register.");
 						break;
 					}
 

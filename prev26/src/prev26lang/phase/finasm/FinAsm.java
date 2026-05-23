@@ -17,6 +17,18 @@ public class FinAsm extends Phase {
 	/** Scratch register reserved for final-phase address and size calculations. */
 	private static final String SCRATCH = "x3";
 
+	/** Size of one stack slot. */
+	private static final long WORD_SIZE = 8;
+
+	/** Fixed frame slots stored at the low end of the frame: old FP and RA. */
+	private static final long LOWER_FIXED_FRAME_SIZE = 2 * WORD_SIZE;
+
+	/** Size of the callee-owned static-link slot. */
+	private static final long STATIC_LINK_SIZE = WORD_SIZE;
+
+	/** FP-relative offset of the saved static link. */
+	private static final long STATIC_LINK_FP_OFFSET = -WORD_SIZE;
+
 	/** Ripes environment-call register for the first argument/result (a0). */
 	private static final String SYSCALL_ARG = "x10";
 
@@ -100,7 +112,7 @@ public class FinAsm extends Phase {
 	private void emitBootstrap() {
 		lines.add("main:");
 		lines.add("  addi x2, x2, -16");
-		lines.add("  sd x0, 0(x2)");
+		lines.add("  addi x10, x0, 0");
 		lines.add("  jal x1, _main");
 
 		// emitPrintString("Program exited with value: ");
@@ -179,6 +191,7 @@ public class FinAsm extends Phase {
 		emitStore("x8", oldFpOffset);
 		emitStore("x1", returnAddressOffset);
 		emitSetFP(frameSize);
+		lines.add("  sd x10, " + STATIC_LINK_FP_OFFSET + "(x8)");
 		lines.add("  jal x0, " + codeChunk.entryLabel.name);
 	}
 
@@ -195,7 +208,7 @@ public class FinAsm extends Phase {
 		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame);
 		final long returnAddressOffset = returnAddressOffset(codeChunk.frame);
 
-		lines.add("  sd " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x8)");
+		lines.add("  addi x10, " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0");
 
 		for (int i = savedRegisters.size() - 1; i >= 0; i--)
 			emitLoad(savedRegisters.get(i), registerBase + 8L * i);
@@ -216,7 +229,7 @@ public class FinAsm extends Phase {
 	private void emitRuntime() {
 		lines.add("_putint:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 16(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 1");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -225,7 +238,7 @@ public class FinAsm extends Phase {
 
 		lines.add("_putchar:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 16(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -236,7 +249,6 @@ public class FinAsm extends Phase {
 		emitRuntimeSave();
 		lines.add("  addi " + SYSCALL_ID + ", x0, 5");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");
@@ -245,17 +257,15 @@ public class FinAsm extends Phase {
 		emitRuntimeSave();
 		lines.add("  addi " + SYSCALL_ID + ", x0, 12");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_new:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 16(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 9");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");
@@ -274,7 +284,6 @@ public class FinAsm extends Phase {
 	 */
 	private void emitRuntimeSave() {
 		lines.add("  addi x2, x2, -16");
-		lines.add("  sd " + SYSCALL_ARG + ", 0(x2)");
 		lines.add("  sd " + SYSCALL_ID + ", 8(x2)");
 	}
 
@@ -283,7 +292,6 @@ public class FinAsm extends Phase {
 	 */
 	private void emitRuntimeRestore() {
 		lines.add("  ld " + SYSCALL_ID + ", 8(x2)");
-		lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
 		lines.add("  addi x2, x2, 16");
 	}
 
@@ -311,7 +319,7 @@ public class FinAsm extends Phase {
 	 * Computes how many spill slots were added by register allocation.
 	 */
 	private long spillSize(final MEM.Frame frame) {
-		final long spillSize = frame.size - frame.argsSize - 16 - frame.locsSize;
+		final long spillSize = frame.size - frame.argsSize - LOWER_FIXED_FRAME_SIZE - STATIC_LINK_SIZE - frame.locsSize;
 		if (spillSize < 0)
 			throw new Report.InternalError();
 		return spillSize;
@@ -321,7 +329,7 @@ public class FinAsm extends Phase {
 	 * Computes where saved physical registers start inside the frame.
 	 */
 	private long registerSaveBase(final MEM.Frame frame) {
-		return frame.argsSize + 16 + spillSize(frame);
+		return frame.argsSize + LOWER_FIXED_FRAME_SIZE + spillSize(frame);
 	}
 
 	/**
@@ -335,7 +343,7 @@ public class FinAsm extends Phase {
 	 * Computes where the return address is saved inside the frame.
 	 */
 	private long returnAddressOffset(final MEM.Frame frame) {
-		return frame.argsSize + 8;
+		return frame.argsSize + WORD_SIZE;
 	}
 
 	/**

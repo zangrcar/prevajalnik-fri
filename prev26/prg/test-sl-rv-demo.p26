@@ -1,0 +1,33 @@
+fun putint(i : int) : void
+fun putchar(c : char) : void
+
+fun main() : int =
+    let
+        var base : int
+        var result : int
+
+        fun outer(seed : int) : int =
+            let
+                var bump : int
+
+                fun helper(z : int) : int =
+                    base + seed + bump + z
+
+                fun inner(x : int) : int =
+                    let
+                        var before : int
+                    in
+                        before = helper(x),
+                        before + base + seed + bump
+                    end
+            in
+                bump = 7,
+                inner(4)
+            end
+    in
+        base = 10,
+        result = outer(3),
+        putint(result),
+        putchar('\x0A'),
+        result
+    end

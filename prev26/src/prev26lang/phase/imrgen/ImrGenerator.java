@@ -10,6 +10,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 	private static final long ADDRESS_SIZE = 8;
 	private static final long ALIGNMENT = 8;
+	private static final long STATIC_LINK_OFFSET = -ADDRESS_SIZE;
 
 	private MEM.Frame currentFrame = null;
 
@@ -201,7 +202,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 	private IMR.Expr staticLinkAt(final IMR.Expr framePointer) {
 		if (framePointer == null)
 			throw new Report.InternalError();
-		return new IMR.MEM8(framePointer);
+		return new IMR.MEM8(addressWithOffset(framePointer, STATIC_LINK_OFFSET));
 	}
 
 	private IMR.Expr staticChainTo(final long targetDepth) {
@@ -478,9 +479,6 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		final Vector<Long> offsets = new Vector<Long>();
 		long offset = 0;
 
-		offsets.add(offset);
-		offset += ADDRESS_SIZE;
-
 		for (final AST.Expr argExpr : callExpr.argExprs) {
 			offsets.add(offset);
 			offset += slotSizeOf(requireExprType(argExpr));
@@ -493,15 +491,19 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		if (callExpr == null)
 			throw new Report.InternalError();
 
-		final AST.FunDefn callee = directCallee(callExpr);
-
 		final Vector<IMR.Expr> args = new Vector<IMR.Expr>();
-		args.add(callee == null ? indirectCallStaticLink() : callStaticLink(callee));
-
 		for (final AST.Expr argExpr : callExpr.argExprs)
 			args.add(requireExprIR(argExpr));
 
 		return args;
+	}
+
+	private IMR.Expr callStaticLink(final AST.CallExpr callExpr) {
+		if (callExpr == null)
+			throw new Report.InternalError();
+
+		final AST.FunDefn callee = directCallee(callExpr);
+		return callee == null ? indirectCallStaticLink() : callStaticLink(callee);
 	}
 
 	// --------------------------------------------------------------------
@@ -599,6 +601,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 			callExpr, 
 			new IMR.CALL(
 				requireExprIR(callExpr.funExpr), 
+				callStaticLink(callExpr),
 				callArgOffsets(callExpr), 
 				callArgs(callExpr)
 			)

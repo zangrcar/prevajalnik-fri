@@ -503,17 +503,21 @@ public class AsmGenerator {
 			storeToStack(arg, call.offs.get(i));
 		}
 
+		final MEM.Temp addr = (call.addr instanceof IMR.NAME) ? null : munchExpr(call.addr);
+		final MEM.Temp staticLink = munchExpr(call.staticLink);
+		if (!staticLink.equals(MEM.SL_RV))
+			emit(ASM.move("addi *d0, *s0, 0", MEM.SL_RV, staticLink));
+
 		if (call.addr instanceof IMR.NAME name)
-			emit("jal *d0, *l0", temps(MEM.RA), new Vector<MEM.Temp>(), labels(name.label), new Vector<MEM.Label>(),
+			emit("jal *d0, *l0", temps(MEM.RA, MEM.SL_RV), temps(MEM.SL_RV), labels(name.label), new Vector<MEM.Label>(),
 				ASM.ControlFlow.CALL);
 		else {
-			final MEM.Temp addr = munchExpr(call.addr);
-			emit("jalr *d0, *s0, 0", temps(MEM.RA), temps(addr), new Vector<MEM.Label>(),
+			emit("jalr *d0, *s0, 0", temps(MEM.RA, MEM.SL_RV), temps(addr, MEM.SL_RV), new Vector<MEM.Label>(),
 				new Vector<MEM.Label>(), ASM.ControlFlow.CALL);
 		}
 
 		if (dst != null)
-			emit("ld *d0, 0(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>());
+			emit(ASM.move("addi *d0, *s0, 0", dst, MEM.SL_RV));
 	}
 
 	/**

@@ -86,14 +86,16 @@ public class IMR {
 	/**
 	 * Function call.
 	 * 
-	 * Evaluates arguments (the static link must be included) from left to right,
-	 * calls the function denoted by the label provided and returns the function's
-	 * result.
+	 * Evaluates the static link and arguments from left to right, calls the
+	 * function denoted by the label provided and returns the function's result.
 	 */
 	public static class CALL extends Expr {
 
 		/** The address of the function. */
 		public final Expr addr;
+
+		/** The static link passed through the fixed call register. */
+		public final Expr staticLink;
 
 		/** The offsets of arguments. */
 		public final Vector<Long> offs;
@@ -104,12 +106,14 @@ public class IMR {
 		/**
 		 * Constructs a function call.
 		 * 
-		 * @param addr The address of the function.
-		 * @param offs The offsets of arguments.
-		 * @param args The values of arguments.
+		 * @param addr       The address of the function.
+		 * @param staticLink The static link.
+		 * @param offs       The offsets of arguments.
+		 * @param args       The values of arguments.
 		 */
-		public CALL(Expr addr, Vector<Long> offs, Vector<Expr> args) {
+		public CALL(Expr addr, Expr staticLink, Vector<Long> offs, Vector<Expr> args) {
 			this.addr = addr;
+			this.staticLink = staticLink;
 			this.offs = new Vector<Long>(offs);
 			this.args = new Vector<Expr>(args);
 		}
@@ -124,6 +128,7 @@ public class IMR {
 			logger.begElement("imc");
 			logger.addAttribute("instruction", "CALL");
 			addr.log(logger);
+			staticLink.log(logger);
 			for (int a = 0; a < args.size(); a++)
 				args.get(a).log(logger);
 			logger.endElement();
@@ -134,6 +139,8 @@ public class IMR {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append("CALL(");
 			buffer.append(addr.toString());
+			buffer.append(",SL:");
+			buffer.append(staticLink.toString());
 			for (int a = 0; a < args.size(); a++) {
 				buffer.append(",");
 				buffer.append(offs.get(a).toString());

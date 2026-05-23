@@ -16,6 +16,9 @@ public class MEM {
 	/** The fixed temporary holding the return address. */
 	public static final Temp RA = new Temp("RA");
 
+	/** The fixed temporary used to pass the static link in and the return value out. */
+	public static final Temp SL_RV = new Temp("SL_RV");
+
 	/**
 	 * A stack frame.
 	 * 

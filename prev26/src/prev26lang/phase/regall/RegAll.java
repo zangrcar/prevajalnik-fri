@@ -14,7 +14,7 @@ public class RegAll extends Phase {
 
 	/** Allocatable RISC-V registers used for compiler temporaries. */
 	private static final String[] ALLOCATABLE_REGISTERS = {
-		"x5", "x6", "x7", "x9", "x10", "x11", "x12", "x13",
+		"x5", "x6", "x7", "x9", "x11", "x12", "x13",
 		"x14", "x15", "x16", "x17", "x18", "x19", "x20", "x21",
 		"x22", "x23", "x24", "x25", "x26", "x27", "x28", "x29",
 		"x30", "x31"
@@ -103,7 +103,7 @@ public class RegAll extends Phase {
 	 * Returns true if a temporary has a preassigned physical register.
 	 */
 	public static boolean isFixedRegister(final MEM.Temp temp) {
-		return temp.equals(MEM.SP) || temp.equals(MEM.FP) || temp.equals(MEM.RA);
+		return temp.equals(MEM.SP) || temp.equals(MEM.FP) || temp.equals(MEM.RA) || temp.equals(MEM.SL_RV);
 	}
 
 	/**
@@ -116,6 +116,8 @@ public class RegAll extends Phase {
 			return "x8";
 		if (temp.equals(MEM.RA))
 			return "x1";
+		if (temp.equals(MEM.SL_RV))
+			return "x10";
 
 		throw new Report.InternalError();
 	}
