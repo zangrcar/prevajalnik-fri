@@ -298,7 +298,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		return switch (oper) {
 		case NOT -> IMR.UNOP.Oper.NOT;
 		case SUB -> IMR.UNOP.Oper.NEG;
-		case ADD, PTR -> throw new Report.InternalError();
+		case ADD, PTR, CONST -> throw new Report.InternalError();
 		};
 	}
 
@@ -504,6 +504,86 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		return args;
 	}
 
+	private IMR.Expr evalConst(final AST.Expr expr) {
+		if (!Boolean.TRUE.equals(SemAn.isConstAttr.get(expr)))
+			throw new Report.InternalError();
+
+		if (expr instanceof AST.AtomExpr atomExpr)
+			return valueOfAtom(atomExpr);
+
+		if (expr instanceof AST.SizeExpr sizeExpr)
+			return new IMR.CONST(sizeOf(sizeExpr.type));
+
+		if (expr instanceof AST.PfxExpr pfxExpr) {
+			final IMR.Expr sub = evalConst(pfxExpr.subExpr);
+
+			if (pfxExpr.oper == AST.PfxExpr.Oper.CONST || pfxExpr.oper == AST.PfxExpr.Oper.ADD)
+				return sub;
+
+			final long value = constLong(sub, pfxExpr.subExpr);
+			return switch (pfxExpr.oper) {
+				case SUB -> new IMR.CONST(-value);
+				case NOT -> new IMR.CONST(value == 0 ? 1 : 0);
+				default -> throw new Report.InternalError();
+			};
+		}
+
+		if (expr instanceof AST.BinExpr binExpr) {
+			final long fst = constLong(evalConst(binExpr.fstExpr), binExpr.fstExpr);
+			final long snd = constLong(evalConst(binExpr.sndExpr), binExpr.sndExpr);
+			return new IMR.CONST(evalConstBin(binExpr.oper, fst, snd, binExpr));
+		}
+
+		throw new Report.InternalError();
+	}
+
+	private long constLong(final IMR.Expr expr, final AST.Node blame) {
+		if (expr instanceof IMR.CONST constant)
+			return constant.value;
+
+		throw new Report.Error(blame, "Cannot evaluate constant expression.");
+	}
+
+
+	private long evalConstBin(
+		final AST.BinExpr.Oper oper,
+		final long fst,
+		final long snd,
+		final AST.Node blame
+	) {
+		return switch (oper) {
+			case OR -> boolValue(fst != 0 || snd != 0);
+			case AND -> boolValue(fst != 0 && snd != 0);
+
+			case EQU -> boolValue(fst == snd);
+			case NEQ -> boolValue(fst != snd);
+			case LTH -> boolValue(fst < snd);
+			case GTH -> boolValue(fst > snd);
+			case LEQ -> boolValue(fst <= snd);
+			case GEQ -> boolValue(fst >= snd);
+
+			case ADD -> fst + snd;
+			case SUB -> fst - snd;
+			case MUL -> fst * snd;
+
+			case DIV -> {
+				if (snd == 0)
+					throw new Report.Error(blame, "Division by zero in constant expression.");
+				yield fst / snd;
+			}
+
+			case MOD -> {
+				if (snd == 0)
+					throw new Report.Error(blame, "Modulo by zero in constant expression.");
+				yield fst % snd;
+			}
+		};
+	}
+
+	private long boolValue(final boolean value) {
+		return value ? 1 : 0;
+	}
+
 	// --------------------------------------------------------------------
 	// Definitions
 	// --------------------------------------------------------------------
@@ -651,6 +731,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		final IMR.Expr subExpr = requireExprIR(pfxExpr.subExpr);
 		switch (pfxExpr.oper) {
 		case ADD -> putExprIR(pfxExpr, subExpr);
+		case CONST -> putExprIR(pfxExpr, evalConst(pfxExpr.subExpr));
 		case SUB, NOT -> putExprIR(pfxExpr, new IMR.UNOP(unOper(pfxExpr.oper), subExpr));
 		case PTR -> putExprIR(pfxExpr, addrOf(subExpr));
 		}

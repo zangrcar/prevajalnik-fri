@@ -246,6 +246,14 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 			throw new Report.Error(node, "Expected type void.");
 	}
 
+	/**
+     * Require constant expression.
+     */
+    private void requireConst(final AST.Node node) {
+		if (!SemAn.isConstAttr.get(node))
+			throw new Report.Error(node, "Expected a constant.");
+	}
+
     /**
      * Require non-void value type where needed.
      */
@@ -653,6 +661,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		switch (pfxExpr.oper) {
 			case NOT -> requireBool(pfxExpr.subExpr, subType);
 			case ADD, SUB -> requireInt(pfxExpr.subExpr, subType);
+			case CONST -> requireConst(pfxExpr.subExpr);
 			case PTR -> {
 				if (!isAddr(pfxExpr.subExpr))
 					throw new Report.Error(pfxExpr.subExpr, "Expression is not addressable.");

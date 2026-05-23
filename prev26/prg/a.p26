@@ -1,0 +1,7 @@
+fun main(): int = 
+	putint(const (1-2)),
+	0/0,
+	const 0
+
+fun g(i: int): int = i+1
+fun putint(i: int): void

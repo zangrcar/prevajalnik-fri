@@ -573,18 +573,28 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
         if (phase == Phase.RESOLVE_FUN_BODIES) {
 
 			pfxExpr.subExpr.accept(this, phase);
+
+			if(pfxExpr.oper == AST.PfxExpr.Oper.CONST && !SemAn.isConstAttr.get(pfxExpr.subExpr)) {
+				throw new Report.Error(
+					pfxExpr.subExpr,
+					"Not a constant expression."
+				);
+			}
+
 			TYP.Type subType = SemAn.ofTypeAttr.get(pfxExpr.subExpr);
 
 			TYP.Type type = switch (pfxExpr.oper) {
 				case NOT -> TYP.BoolType.type;
 				case ADD, SUB -> TYP.IntType.type;
 				case PTR -> new TYP.PtrType(subType);
+				case CONST -> SemAn.ofTypeAttr.get(pfxExpr.subExpr);
 			};
 
 			SemAn.ofTypeAttr.put(pfxExpr, type);
 			SemAn.isConstAttr.put(pfxExpr, switch (pfxExpr.oper) {
 				case NOT, ADD, SUB -> Boolean.TRUE.equals(SemAn.isConstAttr.get(pfxExpr.subExpr));
 				case PTR -> false;
+				case CONST -> true;
 			});
 			SemAn.isAddrAttr.put(pfxExpr, false);
         }

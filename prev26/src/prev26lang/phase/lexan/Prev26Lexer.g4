@@ -72,6 +72,7 @@ lexer grammar Prev26Lexer;
 AND : 'and';
 AS : 'as';
 BOOL : 'bool';
+CONST : 'const';
 DO : 'do';
 CHAR : 'char';
 ELSE : 'else';

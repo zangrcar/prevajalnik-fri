@@ -374,7 +374,8 @@ prefix_op returns [AST.PfxExpr.Oper oper]
     : NOT { $oper = AST.PfxExpr.Oper.NOT; }
     | ADD { $oper = AST.PfxExpr.Oper.ADD; }
     | SUB { $oper = AST.PfxExpr.Oper.SUB; }
-    | POWER { $oper = AST.PfxExpr.Oper.PTR; };
+    | POWER { $oper = AST.PfxExpr.Oper.PTR; }
+	| CONST { $oper = AST.PfxExpr.Oper.CONST; };
 
 e_postfix returns [AST.Expr ast]
     : e_basic postfix_tail[$e_basic.ast] { $ast = bind($postfix_tail.ast, $ctx); };

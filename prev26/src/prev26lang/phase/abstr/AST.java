@@ -963,6 +963,8 @@ public class AST {
 			NOT,
 			/** Reference. */
 			PTR,
+			/** Constant. */
+			CONST,
 		};
 
 		/** The operator. */
