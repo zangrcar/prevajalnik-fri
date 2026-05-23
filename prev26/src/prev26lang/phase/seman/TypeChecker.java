@@ -230,6 +230,14 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 			throw new Report.Error(node, "Expected type bool.");
 	}
 
+	/**
+     * Require type bool or int.
+     */
+    private void requireBoolOrInt(final AST.Node node, final TYP.Type type) {
+		if (!equiv(type, TYP.BoolType.type) && !equiv(type, TYP.IntType.type))
+			throw new Report.Error(node, "Expected type bool or int.");
+	}
+
     /**
      * Require type char.
      */
@@ -581,8 +589,8 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 				requireInt(binExpr.sndExpr, sndType);
 			}
 			case AND, OR -> {
-				requireBool(binExpr.fstExpr, fstType);
-				requireBool(binExpr.sndExpr, sndType);
+				requireBoolOrInt(binExpr.fstExpr, fstType);
+				requireBoolOrInt(binExpr.sndExpr, sndType);
 			}
 			case EQU, NEQ, LTH, GTH, LEQ, GEQ -> {
 				requireEquiv(binExpr, fstType, sndType);
@@ -651,7 +659,7 @@ public class TypeChecker implements AST.FullVisitor<Object, Object> {
 		TYP.Type subType = requireExprType(pfxExpr.subExpr);
 
 		switch (pfxExpr.oper) {
-			case NOT -> requireBool(pfxExpr.subExpr, subType);
+			case NOT -> requireBoolOrInt(pfxExpr.subExpr, subType);
 			case ADD, SUB -> requireInt(pfxExpr.subExpr, subType);
 			case PTR -> {
 				if (!isAddr(pfxExpr.subExpr))

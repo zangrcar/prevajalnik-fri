@@ -463,12 +463,12 @@ public class AsmGenerator {
 		case AND -> {
 			final MEM.Temp leftBool = boolValue(fst);
 			final MEM.Temp rightBool = boolValue(snd);
-			emit("and *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
+			emit("and *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
 		}
 		case OR -> {
 			final MEM.Temp leftBool = boolValue(fst);
 			final MEM.Temp rightBool = boolValue(snd);
-			emit("or *d0, *s0, *s1", temps(dst), temps(leftBool, rightBool), new Vector<MEM.Label>());
+			emit("or *d0, *s0, *s1", temps(dst), temps(fst, snd), new Vector<MEM.Label>());
 		}
 		}
 	}
@@ -488,9 +488,12 @@ public class AsmGenerator {
 	private void munchUnop(final MEM.Temp dst, final IMR.UNOP unOp) {
 		final MEM.Temp sub = munchExpr(unOp.subExpr);
 
-		switch (unOp.oper) {
-		case NEG -> emit("sub *d0, x0, *s0", temps(dst), temps(sub), new Vector<MEM.Label>());
-		case NOT -> emit("sltiu *d0, *s0, 1", temps(dst), temps(sub), new Vector<MEM.Label>());
+		if(unOp.oper == IMR.UNOP.Oper.NEG) {
+			emit("sub *d0, x0, *s0", temps(dst), temps(sub), new Vector<MEM.Label>());
+		} else if(unOp.isInt) {
+			emit("xori *d0, *s0, 0xFFFFFFFF", temps(dst), temps(sub), new Vector<MEM.Label>());
+		} else {
+			emit("sltiu *d0, *s0, 1", temps(dst), temps(sub), new Vector<MEM.Label>());
 		}
 	}
 

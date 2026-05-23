@@ -1,0 +1,14 @@
+fun putint(i: int): void
+fun putchar(c: char): void
+
+var a: int
+fun main(): int = 
+	putint(not 9),
+	putchar(' '),
+	putint(7 and 8),
+	putchar(' '),
+	putint(7 or 8),
+	putchar(' '),
+	a=not 0,
+	if(not true) then putchar('x') end,
+	0

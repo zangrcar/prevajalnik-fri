@@ -403,15 +403,18 @@ public class IMR {
 		/** The operand. */
 		public final Expr subExpr;
 
+		public final boolean isInt;
+
 		/**
 		 * Constructs a unary operation.
 		 * 
 		 * @param oper    The operator.
 		 * @param subExpr The operand.
 		 */
-		public UNOP(Oper oper, Expr subExpr) {
+		public UNOP(Oper oper, Expr subExpr, boolean isInt) {
 			this.oper = oper;
 			this.subExpr = subExpr;
+			this.isInt = isInt;
 		}
 
 		@Override

@@ -169,7 +169,7 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 
 		if (expr instanceof IMR.UNOP unOp) {
 			final CanonExpr subExpr = canonExpr(unOp.subExpr);
-			return new CanonExpr(subExpr.stmts, new IMR.UNOP(unOp.oper, subExpr.expr));
+			return new CanonExpr(subExpr.stmts, new IMR.UNOP(unOp.oper, subExpr.expr, unOp.isInt));
 		}
 
 		if (expr instanceof IMR.MEM1 || expr instanceof IMR.MEM8) {

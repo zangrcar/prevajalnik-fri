@@ -649,9 +649,10 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		pfxExpr.subExpr.accept(this, arg);
 
 		final IMR.Expr subExpr = requireExprIR(pfxExpr.subExpr);
+		final boolean isInt = SemAn.ofTypeAttr.get(pfxExpr.subExpr).actualType() instanceof TYP.IntType;
 		switch (pfxExpr.oper) {
 		case ADD -> putExprIR(pfxExpr, subExpr);
-		case SUB, NOT -> putExprIR(pfxExpr, new IMR.UNOP(unOper(pfxExpr.oper), subExpr));
+		case SUB, NOT -> putExprIR(pfxExpr, new IMR.UNOP(unOper(pfxExpr.oper), subExpr, isInt));
 		case PTR -> putExprIR(pfxExpr, addrOf(subExpr));
 		}
 		return null;

@@ -493,9 +493,25 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 
 			TYP.Type type = switch (binExpr.oper) {
 				case ADD, SUB, MUL, DIV, MOD -> TYP.IntType.type;
-				case AND, OR, EQU, NEQ, LTH, GTH, LEQ, GEQ -> TYP.BoolType.type;
+				case EQU, NEQ, LTH, GTH, LEQ, GEQ -> TYP.BoolType.type;
+				case AND, OR -> 
+					(
+						SemAn.ofTypeAttr.get(binExpr.fstExpr).actualType() instanceof TYP.IntType &&
+						SemAn.ofTypeAttr.get(binExpr.sndExpr).actualType() instanceof TYP.IntType
+					) ? TYP.IntType.type : 
+					(
+						SemAn.ofTypeAttr.get(binExpr.fstExpr).actualType() instanceof TYP.BoolType &&
+						SemAn.ofTypeAttr.get(binExpr.sndExpr).actualType() instanceof TYP.BoolType
+					) ? TYP.BoolType.type : null;
+				
 			};
 
+			if (type == null) {
+				throw new Report.Error(binExpr, "We cannot combine bool and int in binop operation.");
+			}
+
+
+			
 			SemAn.ofTypeAttr.put(binExpr, type);
 			SemAn.isConstAttr.put(binExpr,
 				Boolean.TRUE.equals(SemAn.isConstAttr.get(binExpr.fstExpr)) &&
@@ -576,7 +592,7 @@ public class TypeConstructor implements AST.FullVisitor<Object, TypeConstructor.
 			TYP.Type subType = SemAn.ofTypeAttr.get(pfxExpr.subExpr);
 
 			TYP.Type type = switch (pfxExpr.oper) {
-				case NOT -> TYP.BoolType.type;
+				case NOT -> subType.actualType() instanceof TYP.IntType ? TYP.IntType.type : TYP.BoolType.type;
 				case ADD, SUB -> TYP.IntType.type;
 				case PTR -> new TYP.PtrType(subType);
 			};
