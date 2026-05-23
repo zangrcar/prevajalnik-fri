@@ -33,7 +33,7 @@ public class Compiler {
 			Map.entry("--logged-phase", "all"), // -: the name of the logged phase (or none or all)
 			Map.entry("--xml", ""), // -------------: the name of xml files (without phase name and extension)
 			Map.entry("--xsl", "../lib/xsl/"), // --: the directory with the xsl templates for the logs
-			Map.entry("--num-regs", "26"), // -------: number of allocatable registers
+			Map.entry("--num-regs", "25"), // -------: number of allocatable registers
 			Map.entry("--dev-mode", "on") // -------: development mode (on or off)
 	));
 

@@ -44,10 +44,16 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      */
     private static final long STATIC_LINK_SIZE = ADDRESS_SIZE;
 
+    /** Size reserved for the address where the callee stores its return value. */
+    private static final long RETURN_ADDRESS_SIZE = ADDRESS_SIZE;
+
+    /** Size reserved for the caller's return-value storage slot. */
+    private static final long RETURN_VALUE_SIZE = ADDRESS_SIZE;
+
 	/**
      * Offset of the first incoming parameter relative to FP.
      */
-    private static final long FIRST_PARAM_OFFSET = STATIC_LINK_SIZE;
+    private static final long FIRST_PARAM_OFFSET = STATIC_LINK_SIZE + RETURN_ADDRESS_SIZE + RETURN_VALUE_SIZE;
 
     // --------------------------------------------------------------------
     //  Context objects
@@ -506,7 +512,7 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
     private long callAreaSize(final AST.CallExpr callExpr) {
         long size = 0;
 
-        size += STATIC_LINK_SIZE;
+        size += STATIC_LINK_SIZE + RETURN_ADDRESS_SIZE + RETURN_VALUE_SIZE;
 
         // Reserve slots for actual arguments.
         for (AST.Expr argExpr : callExpr.argExprs) {

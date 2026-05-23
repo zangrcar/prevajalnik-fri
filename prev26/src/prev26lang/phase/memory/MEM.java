@@ -1,5 +1,7 @@
 package prev26lang.phase.memory;
 
+import prev26lang.phase.memory.MEM.Temp;
+
 /**
  * Internal representation of stack frames and variable accesses.
  * 

@@ -99,18 +99,20 @@ public class FinAsm extends Phase {
 	 */
 	private void emitBootstrap() {
 		lines.add("main:");
-		lines.add("  addi x2, x2, -16");
+		lines.add("  addi x2, x2, -24");
 		lines.add("  sd x0, 0(x2)");
+		lines.add("  addi x31, x2, 16");
+		lines.add("  sd x31, 8(x2)");
 		lines.add("  jal x1, _main");
 
 		// emitPrintString("Program exited with value: ");
 
-		// lines.add("  ld " + SYSCALL_ARG + ", 0(x2)");
+		// lines.add("  ld " + SYSCALL_ARG + ", 16(x2)");
 		// lines.add("  addi " + SYSCALL_ID + ", x0, 1");
 		// lines.add("  ecall");
 		// emitPrintChar('\n');
 		
-		lines.add("  addi x2, x2, 16");
+		lines.add("  addi x2, x2, 24");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 10");
 		lines.add("  ecall");
 		lines.add("");
@@ -195,7 +197,8 @@ public class FinAsm extends Phase {
 		final long oldFpOffset = oldFramePointerOffset(codeChunk.frame);
 		final long returnAddressOffset = returnAddressOffset(codeChunk.frame);
 
-		lines.add("  sd " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x8)");
+		lines.add("  ld x31, 8(x8)");
+		lines.add("  sd " + renderTemp(codeChunk.frame.RV, registerMap) + ", 0(x31)");
 
 		for (int i = savedRegisters.size() - 1; i >= 0; i--)
 			emitLoad(savedRegisters.get(i), registerBase + 8L * i);
@@ -216,7 +219,7 @@ public class FinAsm extends Phase {
 	private void emitRuntime() {
 		lines.add("_putint:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 40(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 1");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -225,7 +228,7 @@ public class FinAsm extends Phase {
 
 		lines.add("_putchar:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 40(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -236,7 +239,8 @@ public class FinAsm extends Phase {
 		emitRuntimeSave();
 		lines.add("  addi " + SYSCALL_ID + ", x0, 5");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  ld x31, 24(x2)");
+		lines.add("  sd " + SYSCALL_ARG + ", 0(x31)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");
@@ -245,17 +249,19 @@ public class FinAsm extends Phase {
 		emitRuntimeSave();
 		lines.add("  addi " + SYSCALL_ID + ", x0, 12");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  ld x31, 24(x2)");
+		lines.add("  sd " + SYSCALL_ARG + ", 0(x31)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");
 
 		lines.add("_new:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
+		lines.add("  ld " + SYSCALL_ARG + ", 40(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 9");
 		lines.add("  ecall");
-		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");
+		lines.add("  ld x31, 24(x2)");
+		lines.add("  sd " + SYSCALL_ARG + ", 0(x31)");
 		emitRuntimeRestore();
 		lines.add("  jalr x0, x1, 0");
 		lines.add("");

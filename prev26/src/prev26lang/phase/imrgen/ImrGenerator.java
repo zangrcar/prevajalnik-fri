@@ -266,6 +266,14 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		return new IMR.CONST(0xEEEEEEEEL);
 	}
 
+	private IMR.Expr returnValueAddress() {
+		return new IMR.BINOP(
+			IMR.BINOP.Oper.ADD,
+			new IMR.TEMP(MEM.SP),
+			new IMR.CONST(16)
+		);
+	}
+
 	// --------------------------------------------------------------------
 	// Operator and literal helpers
 	// --------------------------------------------------------------------
@@ -480,6 +488,9 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 		offsets.add(offset);
 		offset += ADDRESS_SIZE;
+		offsets.add(offset);
+		offset += ADDRESS_SIZE;
+		offset += ADDRESS_SIZE;
 
 		for (final AST.Expr argExpr : callExpr.argExprs) {
 			offsets.add(offset);
@@ -497,6 +508,7 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 		final Vector<IMR.Expr> args = new Vector<IMR.Expr>();
 		args.add(callee == null ? indirectCallStaticLink() : callStaticLink(callee));
+		args.add(returnValueAddress());
 
 		for (final AST.Expr argExpr : callExpr.argExprs)
 			args.add(requireExprIR(argExpr));

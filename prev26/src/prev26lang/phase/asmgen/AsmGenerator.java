@@ -512,8 +512,12 @@ public class AsmGenerator {
 				new Vector<MEM.Label>(), ASM.ControlFlow.CALL);
 		}
 
-		if (dst != null)
-			emit("ld *d0, 0(*s0)", temps(dst), temps(MEM.SP), new Vector<MEM.Label>());
+		if (dst != null) {
+			final MEM.Temp rvaddr = new MEM.Temp();
+			
+			emit("ld *d0, 8(*s0)", temps(rvaddr), temps(MEM.SP), new Vector<MEM.Label>());
+			emit("ld *d0, 0(*s0)", temps(dst), temps(rvaddr), new Vector<MEM.Label>());
+		}
 	}
 
 	/**

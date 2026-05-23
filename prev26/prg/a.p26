@@ -3,4 +3,9 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+fun main(): int = 
+	putint(g(4)),
+	putchar(' '),
+	0
+
+fun g(i: int): int = i+1
