@@ -120,7 +120,7 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 		throw new Report.InternalError();
 	}
 
-	/** Canonicalizes a call target and arguments while preserving left-to-right order. */
+	/** Canonicalizes a call target and arguments while preserving README order. */
 	private CanonCall canonCall(final IMR.CALL call) {
 		final Vector<IMR.Stmt> prefix = stmts();
 		final IMR.Expr callAddr;
@@ -135,13 +135,32 @@ public class ImrLinearizer implements AST.FullVisitor<Object, Object> {
 		}
 
 		final Vector<IMR.Expr> args = new Vector<IMR.Expr>();
-		for (final IMR.Expr arg : call.args) {
+		final IMR.Expr sl = call.args.get(0);
+		final CanonExpr canonSL = canonExpr(sl);
+		prefix.addAll(canonSL.stmts);
+		final MEM.Temp slTemp = new MEM.Temp();
+		prefix.add(new IMR.MOVE(new IMR.TEMP(slTemp), canonSL.expr));
+
+
+		if(call.args.size() > 1) {
+			for (int i = call.args.size() - 2; i > 0; i--) {
+				final IMR.Expr arg = call.args.get(i);
+				final CanonExpr canonArg = canonExpr(arg);
+				prefix.addAll(canonArg.stmts);
+				final MEM.Temp argTemp = new MEM.Temp();
+				prefix.add(new IMR.MOVE(new IMR.TEMP(argTemp), canonArg.expr));
+				args.addFirst(new IMR.TEMP(argTemp));
+			}
+
+			final IMR.Expr arg = call.args.lastElement();
 			final CanonExpr canonArg = canonExpr(arg);
 			prefix.addAll(canonArg.stmts);
 			final MEM.Temp argTemp = new MEM.Temp();
 			prefix.add(new IMR.MOVE(new IMR.TEMP(argTemp), canonArg.expr));
-			args.add(new IMR.TEMP(argTemp));
+			args.addLast(new IMR.TEMP(argTemp));
 		}
+
+		args.addFirst(new IMR.TEMP(slTemp));
 
 		return new CanonCall(prefix, new IMR.CALL(callAddr, call.offs, args));
 	}

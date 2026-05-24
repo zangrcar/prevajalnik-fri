@@ -3,4 +3,15 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+fun main(): int = 
+	g(p(1), p(2), p(3)),
+	h()
+
+fun g(i: int, j: int, k: int): int = i+j+k
+
+fun p(i: int): int = 
+	putint(i),
+	putchar(' '),
+	i
+
+fun h(): int = 0
