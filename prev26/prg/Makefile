@@ -13,7 +13,7 @@ TARGETPHASE	?= $(PHASE)
 LOGGEDPHASE	?= $(PHASE)
 endif
 
-NUMREGS ?= 26
+NUMREGS ?= 24
 
 TESTS := $(basename $(wildcard test*.p26))
 ERRORS := $(basename $(wildcard err*.p26))
