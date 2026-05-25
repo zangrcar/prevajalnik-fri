@@ -727,19 +727,19 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 	@Override
 	public Object visit(final AST.WhileExpr whileExpr, final Object arg) {
-		whileExpr.condExpr.accept(this, arg);
 		whileExpr.expr.accept(this, arg);
+		whileExpr.condExpr.accept(this, arg);
 
 		final MEM.Label condLabel = new MEM.Label();
 		final MEM.Label bodyLabel = new MEM.Label();
 		final MEM.Label endLabel = new MEM.Label();
 
 		final Vector<IMR.Stmt> body = stmts();
-		body.add(new IMR.LABEL(condLabel));
-		body.add(new IMR.CJUMP(requireExprIR(whileExpr.condExpr), new IMR.NAME(bodyLabel), new IMR.NAME(endLabel)));
 		body.add(new IMR.LABEL(bodyLabel));
 		body.add(new IMR.ESTMT(requireExprIR(whileExpr.expr)));
 		body.add(new IMR.JUMP(new IMR.NAME(condLabel)));
+		body.add(new IMR.LABEL(condLabel));
+		body.add(new IMR.CJUMP(requireExprIR(whileExpr.condExpr), new IMR.NAME(bodyLabel), new IMR.NAME(endLabel)));
 		body.add(new IMR.LABEL(endLabel));
 
 		putExprIR(whileExpr, sexpr(body, new IMR.CONST(0)));

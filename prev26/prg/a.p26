@@ -3,4 +3,8 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+var a: int
+fun main(): int = 
+	a = 0,
+	while a > 0 do putint(a) end,
+	0
