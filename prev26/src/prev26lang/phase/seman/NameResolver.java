@@ -29,17 +29,22 @@ public class NameResolver implements AST.FullVisitor<Object, NameResolver.Phase>
 	private SymbTable symbTable = new SymbTable();
 
 	private void insertDefn(AST.Defn defn) {
-		// not handled by name resolver
 		if (defn instanceof AST.CompDefn)
 			return;
+
+		if (defn instanceof AST.TypDefn) {
+			try {
+				symbTable.fnd(defn.name);
+				throw new Report.Error(defn, "Type name '" + defn.name + "' is already defined.");
+			} catch (SymbTable.CannotFndNameException ex) {
+				// ok: no active definition with this name
+			}
+		}
 
 		try {
 			symbTable.ins(defn.name, defn);
 		} catch (SymbTable.CannotInsNameException ex) {
-			throw new Report.Error(
-				defn,
-				"Name '" + defn.name + "' is already defined in this scope."
-			);
+			throw new Report.Error(defn, "Name '" + defn.name + "' is already defined in this scope.");
 		}
 	}
 

@@ -3,4 +3,14 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+typ b = int
+var a: int
+
+fun main(): int = 
+	a = 3,
+	let
+		var a: b
+	in 
+		a = 'c' as int
+	end,
+	0
