@@ -216,7 +216,6 @@ public class FinAsm extends Phase {
 	private void emitRuntime() {
 		lines.add("_putint:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 1");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -225,7 +224,6 @@ public class FinAsm extends Phase {
 
 		lines.add("_putchar:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 11");
 		lines.add("  ecall");
 		emitRuntimeRestore();
@@ -252,7 +250,6 @@ public class FinAsm extends Phase {
 
 		lines.add("_new:");
 		emitRuntimeSave();
-		lines.add("  ld " + SYSCALL_ARG + ", 24(x2)");
 		lines.add("  addi " + SYSCALL_ID + ", x0, 9");
 		lines.add("  ecall");
 		lines.add("  sd " + SYSCALL_ARG + ", 16(x2)");

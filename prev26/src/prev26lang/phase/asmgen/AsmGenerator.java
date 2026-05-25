@@ -500,7 +500,11 @@ public class AsmGenerator {
 	private void munchCall(final IMR.CALL call, final MEM.Temp dst) {
 		for (int i = 0; i < call.args.size(); i++) {
 			final MEM.Temp arg = munchExpr(call.args.get(i));
-			storeToStack(arg, call.offs.get(i));
+			final long offset = call.offs.get(i);
+			if (offset < 0)
+				emit(ASM.move("addi *d0, *s0, 0", MEM.FA, arg));
+			else
+				storeToStack(arg, offset);
 		}
 
 		if (call.addr instanceof IMR.NAME name)

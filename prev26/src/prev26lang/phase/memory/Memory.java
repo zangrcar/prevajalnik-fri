@@ -129,6 +129,13 @@ public class Memory extends Phase {
 						xmlLogger.addAttribute("depth", Long.toString(relAccess.depth));
 					xmlLogger.endElement();
 				}
+				case final MEM.RegAccess regAccess -> {
+					xmlLogger.begElement("access");
+					xmlLogger.addAttribute("size", Long.toString(regAccess.size));
+					xmlLogger.addAttribute("temp", regAccess.temp.toString());
+					xmlLogger.addAttribute("depth", Long.toString(regAccess.depth));
+					xmlLogger.endElement();
+				}
 				default -> {
 					throw new Report.InternalError();
 				}

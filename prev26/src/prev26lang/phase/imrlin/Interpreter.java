@@ -208,7 +208,10 @@ public class Interpreter {
 	private Long callArgLD(IMR.CALL call, int argIndex) {
 		if (argIndex < 0 || argIndex >= call.offs.size())
 			throw new Report.InternalError();
-		return memLD(tempLD(SP, false) + call.offs.get(argIndex), false);
+		final long offset = call.offs.get(argIndex);
+		if (offset < 0)
+			return tempLD(MEM.FA, false);
+		return memLD(tempLD(SP, false) + offset, false);
 	}
 
 	private void memST(Long address, Long value) {
@@ -509,7 +512,11 @@ public class Interpreter {
 			for (int a = 0; a < imrCall.args.size(); a++) {
 				IMR.Expr callArg = imrCall.args.get(a);
 				Long callValue = callArg.accept(new ExprInterpreter(), null);
-				memST(tempLD(SP) + imrCall.offs.get(a), callValue);
+				final long offset = imrCall.offs.get(a);
+				if (offset < 0)
+					tempST(MEM.FA, callValue);
+				else
+					memST(tempLD(SP) + offset, callValue);
 			}
 			MEM.Label callLabel = labelOf(imrCall.addr);
 			if (callLabel.name.equals("_new")) {

@@ -3,4 +3,7 @@ fun putchar(c : char) : void
 fun getint() : int
 fun getchar() : char
 
-fun main(): int = 0
+fun main(): int =
+	g(1, 1, 1)
+
+fun g(i: int, j: int, k: int): int = i+j+k

@@ -16,6 +16,9 @@ public class MEM {
 	/** The fixed temporary holding the return address. */
 	public static final Temp RA = new Temp("RA");
 
+	/** The fixed temporary holding the first incoming argument. */
+	public static final Temp FA = new Temp("FA");
+
 	/**
 	 * A stack frame.
 	 * 
@@ -175,6 +178,25 @@ public class MEM {
 		public RelAccess(long size, long offset, long depth) {
 			super(size);
 			this.offset = offset;
+			this.depth = depth;
+		}
+
+	}
+
+	/**
+	 * An access to a variable held in a temporary register.
+	 */
+	static public class RegAccess extends Access {
+
+		/** The temporary holding the variable value. */
+		public final Temp temp;
+
+		/** The variable's static depth. */
+		public final long depth;
+
+		public RegAccess(long size, Temp temp, long depth) {
+			super(size);
+			this.temp = temp;
 			this.depth = depth;
 		}
 

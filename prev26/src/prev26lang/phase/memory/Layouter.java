@@ -68,17 +68,19 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
         final long depth;
         final MEM.Label label;
         final boolean hasFrame;   // true only for DefFunDefn, false for ExtFunDefn
+		final AST.ParDefn firstPar;
 
         long nextParOffset;
         long nextLocalOffset;     // grows negatively
         long locsSize;
         long maxArgsSize;
 
-        FunCtx(AST.FunDefn funDefn, long depth, MEM.Label label, boolean hasFrame) {
+        FunCtx(AST.FunDefn funDefn, long depth, MEM.Label label, boolean hasFrame, AST.ParDefn firstPar) {
             this.funDefn = funDefn;
             this.depth = depth;
             this.label = label;
             this.hasFrame = hasFrame;
+			this.firstPar = firstPar;
 
             this.nextParOffset = FIRST_PARAM_OFFSET;
             this.nextLocalOffset = 0;
@@ -412,6 +414,11 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
         final long size = slotSizeOf(parDefn.type);
         final long offset = ctx.nextParOffset;
 
+		if (ctx.firstPar.equals(parDefn)) {
+			Memory.accessAttr.put(parDefn, new MEM.RegAccess(size, new MEM.Temp(), ctx.depth));
+			return;
+		}
+
         Memory.accessAttr.put(parDefn, new MEM.RelAccess(size, offset, ctx.depth));
         ctx.nextParOffset += size;
     }
@@ -459,7 +466,8 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
      * not get a frame in Memory.frameAttr.
      */
     private FunCtx enterFunction(final AST.FunDefn funDefn, final boolean hasFrame) {
-        final FunCtx ctx = new FunCtx(funDefn, nextFunctionDepth(), functionLabel(funDefn), hasFrame);
+		final AST.ParDefn firstPar = funDefn.pars.size() == 0 ? null : funDefn.pars.first();
+        final FunCtx ctx = new FunCtx(funDefn, nextFunctionDepth(), functionLabel(funDefn), hasFrame, firstPar);
         funStack.push(ctx);
         return ctx;
     }
@@ -508,8 +516,13 @@ public class Layouter implements AST.FullVisitor<Object, Object> {
 
         size += STATIC_LINK_SIZE;
 
-        // Reserve slots for actual arguments.
+        // Reserve stack slots for actual arguments except the first one.
+		boolean firstArg = true;
         for (AST.Expr argExpr : callExpr.argExprs) {
+			if (firstArg) {
+				firstArg = false;
+				continue;
+			}
             size += slotSizeOf(requireExprType(argExpr));
         }
 

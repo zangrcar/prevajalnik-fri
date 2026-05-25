@@ -185,6 +185,8 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 			final MEM.Access access = requireAccess(extFunDefn.pars.first());
 			if (access instanceof MEM.RelAccess relAccess)
 				return relAccess.depth;
+			if (access instanceof MEM.RegAccess regAccess)
+				return regAccess.depth;
 
 			throw new Report.InternalError();
 		}
@@ -194,6 +196,8 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 			return relAccess.depth;
 		if (access instanceof MEM.AbsAccess)
 			return 0;
+		if (access instanceof MEM.RegAccess regAccess)
+			return regAccess.depth;
 
 		throw new Report.InternalError();
 	}
@@ -478,12 +482,18 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		final Vector<Long> offsets = new Vector<Long>();
 		long offset = 0;
 
-		offsets.add(offset);
+		offsets.add(offset); // static link
 		offset += ADDRESS_SIZE;
+		boolean firstArg = true;
 
 		for (final AST.Expr argExpr : callExpr.argExprs) {
-			offsets.add(offset);
-			offset += slotSizeOf(requireExprType(argExpr));
+			if (firstArg) {
+				offsets.add(-1L);
+				firstArg = false;
+			} else {
+				offsets.add(offset);
+				offset += slotSizeOf(requireExprType(argExpr));
+			}
 		}
 
 		return offsets;
@@ -502,6 +512,17 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 			args.add(requireExprIR(argExpr));
 
 		return args;
+	}
+
+	private MEM.RegAccess firstParamRegAccess(final AST.FunDefn funDefn) {
+		if (funDefn.pars.size() == 0)
+			return null;
+
+		final MEM.Access access = requireAccess(funDefn.pars.first());
+		if (access instanceof MEM.RegAccess regAccess)
+			return regAccess;
+
+		return null;
 	}
 
 	// --------------------------------------------------------------------
@@ -524,6 +545,9 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 			final Vector<IMR.Stmt> body = stmts();
 			body.add(new IMR.LABEL(entryLabel));
+			final MEM.RegAccess firstParamAccess = firstParamRegAccess(defFunDefn);
+			if (firstParamAccess != null)
+				body.add(new IMR.MOVE(new IMR.TEMP(firstParamAccess.temp), new IMR.TEMP(MEM.FA)));
 			body.add(new IMR.MOVE(new IMR.TEMP(frame.RV), requireExprIR(defFunDefn.expr)));
 			body.add(new IMR.JUMP(new IMR.NAME(exitLabel)));
 			body.add(new IMR.LABEL(exitLabel));
@@ -564,8 +588,12 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 		asgnExpr.sndExpr.accept(this, arg);
 
 		final Vector<IMR.Stmt> body = stmts();
-		body.add(new IMR.MOVE(memAt(addrOf(asgnExpr.fstExpr), requireExprType(asgnExpr.fstExpr)),
-				requireExprIR(asgnExpr.sndExpr)));
+		final IMR.Expr dst = requireExprIR(asgnExpr.fstExpr);
+		if (dst instanceof IMR.TEMP temp)
+			body.add(new IMR.MOVE(new IMR.TEMP(temp.temp), requireExprIR(asgnExpr.sndExpr)));
+		else
+			body.add(new IMR.MOVE(memAt(addrOf(dst), requireExprType(asgnExpr.fstExpr)),
+					requireExprIR(asgnExpr.sndExpr)));
 
 		putExprIR(asgnExpr, sexpr(body, new IMR.CONST(0)));
 		return null;
@@ -638,6 +666,8 @@ public class ImrGenerator implements AST.FullVisitor<Object, Object> {
 
 		if (defn instanceof AST.FunDefn funDefn)
 			putExprIR(nameExpr, addressOfFunction(funDefn));
+		else if (requireAccess(defn) instanceof MEM.RegAccess regAccess)
+			putExprIR(nameExpr, new IMR.TEMP(regAccess.temp));
 		else
 			putExprIR(nameExpr, memAt(addressOfDefinition(defn), requireExprType(nameExpr)));
 
