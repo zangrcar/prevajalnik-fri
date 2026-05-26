@@ -7,6 +7,7 @@
 - [Exercise 3: Return Result Through A Local Register](#exercise-3-return-result-through-a-local-register)
 - [Exercise 3: Add `dump()` To Print Active Call Records](#exercise-3-add-dump-to-print-active-call-records)
 - [Exercise 2: Save FP And RA At The Bottom Of The Call Record Only When Needed](#exercise-2-save-fp-and-ra-at-the-bottom-of-the-call-record-only-when-needed)
+- [Exercise 2: Short-Circuit Conditions With `and` And `or`](#exercise-2-short-circuit-conditions-with-and-and-or)
 - [Exercise 1: Special Local Variable `result`](#exercise-1-special-local-variable-result)
 - [Exercise 3: Caller Saves Registers Around Calls](#exercise-3-caller-saves-registers-around-calls)
 - [Exercise 3: Force Addition And Subtraction Results Into One Register](#exercise-3-force-addition-and-subtraction-results-into-one-register)
@@ -2521,3 +2522,370 @@ sub x4, ...
 ```
 
 Every actual addition/subtraction result should first appear in `x4`.
+
+## Exercise 2: Short-Circuit Conditions With `and` And `or`
+
+### What It Demands
+
+The exercise says to change the compiler so that `and` and `or` use short-circuit evaluation only when they appear in the condition of an `if` or `while`.
+
+The required behavior is:
+
+```text
+x or y   = true  if x == true, otherwise y
+x and y  = false if x == false, otherwise y
+```
+
+So the right operand must not be evaluated when the left operand already decides the result.
+
+The two important restrictions are:
+
+- If `and` or `or` is used somewhere else, keep the current ordinary/eager evaluation.
+- Do not change the interpreter.
+
+That points to `imrgen`, not to `imrlin.Interpreter` and not to the normal `IMR.BINOP(AND/OR)` implementation.
+
+### Where It Fits In Prev26
+
+The relevant file is:
+
+- `prev26/src/prev26lang/phase/imrgen/ImrGenerator.java`
+
+Useful files for understanding why this is enough:
+
+- `prev26/src/prev26lang/phase/imrgen/IMR.java`
+- `prev26/src/prev26lang/phase/imrlin/ImrLinearizer.java`
+- `prev26/src/prev26lang/phase/asmgen/AsmGenerator.java`
+- `prev26/src/prev26lang/phase/imrlin/Interpreter.java`
+
+You should not need to change lexical analysis, syntax analysis, semantic analysis, memory layout, ordinary assembly generation, register allocation, or final assembly.
+
+### Current Behavior To Understand First
+
+The current `visit(AST.BinExpr)` always visits both operands and builds one `IMR.BINOP`:
+
+```java
+@Override
+public Object visit(final AST.BinExpr binExpr, final Object arg) {
+    binExpr.fstExpr.accept(this, arg);
+    binExpr.sndExpr.accept(this, arg);
+
+    putExprIR(binExpr, new IMR.BINOP(
+        binOper(binExpr.oper),
+        requireExprIR(binExpr.fstExpr),
+        requireExprIR(binExpr.sndExpr)
+    ));
+    return null;
+}
+```
+
+That is correct for ordinary expression use and should stay unchanged.
+
+The current `if` and `while` visitors first generate the condition as a value and then use that value in a `CJUMP`:
+
+```java
+body.add(new IMR.CJUMP(requireExprIR(ifThenExpr.condExpr), new IMR.NAME(thenLabel), new IMR.NAME(endLabel)));
+```
+
+For a condition like:
+
+```prev
+if x or y then ...
+```
+
+this means `x or y` is first translated as an eager `BINOP(OR, x, y)`, so `y` is evaluated even when `x` is already true.
+
+### Minimal Implementation Plan
+
+1. Add a helper that emits a conditional jump directly from an AST condition.
+
+In `ImrGenerator.java`, add this helper near the existing expression helpers:
+
+```java
+private void emitCondJump(
+    final AST.Expr condExpr,
+    final MEM.Label trueLabel,
+    final MEM.Label falseLabel,
+    final Vector<IMR.Stmt> body,
+    final Object arg
+) {
+    if (condExpr == null || trueLabel == null || falseLabel == null || body == null)
+        throw new Report.InternalError();
+
+    if (condExpr instanceof AST.BinExpr binExpr) {
+        switch (binExpr.oper) {
+        case OR -> {
+            final MEM.Label rightLabel = new MEM.Label();
+            emitCondJump(binExpr.fstExpr, trueLabel, rightLabel, body, arg);
+            body.add(new IMR.LABEL(rightLabel));
+            emitCondJump(binExpr.sndExpr, trueLabel, falseLabel, body, arg);
+            return;
+        }
+        case AND -> {
+            final MEM.Label rightLabel = new MEM.Label();
+            emitCondJump(binExpr.fstExpr, rightLabel, falseLabel, body, arg);
+            body.add(new IMR.LABEL(rightLabel));
+            emitCondJump(binExpr.sndExpr, trueLabel, falseLabel, body, arg);
+            return;
+        }
+        default -> {
+            // Other binary operators are ordinary expressions.
+        }
+        }
+    }
+
+    condExpr.accept(this, arg);
+    body.add(new IMR.CJUMP(requireExprIR(condExpr), new IMR.NAME(trueLabel), new IMR.NAME(falseLabel)));
+}
+```
+
+The shape is the whole solution:
+
+```text
+x or y:
+    if x jump TRUE else jump RIGHT
+RIGHT:
+    if y jump TRUE else jump FALSE
+
+x and y:
+    if x jump RIGHT else jump FALSE
+RIGHT:
+    if y jump TRUE else jump FALSE
+```
+
+Because the helper is recursive, nested conditions also work:
+
+```prev
+if a and b or c then ...
+```
+
+The parser already builds this as nested `AST.BinExpr` nodes, so the helper just follows the AST.
+
+2. Use the helper in `IfThenExpr`.
+
+Change `visit(AST.IfThenExpr)` so it does not eagerly translate the condition with `condExpr.accept(...)`.
+
+Replace the condition part with `emitCondJump(...)`:
+
+```java
+@Override
+public Object visit(final AST.IfThenExpr ifThenExpr, final Object arg) {
+    ifThenExpr.thenExpr.accept(this, arg);
+
+    final MEM.Label thenLabel = new MEM.Label();
+    final MEM.Label endLabel = new MEM.Label();
+
+    final Vector<IMR.Stmt> body = stmts();
+    emitCondJump(ifThenExpr.condExpr, thenLabel, endLabel, body, arg);
+    body.add(new IMR.LABEL(thenLabel));
+    body.add(new IMR.ESTMT(requireExprIR(ifThenExpr.thenExpr)));
+    body.add(new IMR.LABEL(endLabel));
+
+    putExprIR(ifThenExpr, sexpr(body, new IMR.CONST(0)));
+    return null;
+}
+```
+
+The condition is still translated, but only through `emitCondJump`, which can choose between short-circuit control flow and ordinary expression evaluation.
+
+3. Use the helper in `IfThenElseExpr`.
+
+Change the beginning of `visit(AST.IfThenElseExpr)` in the same way:
+
+```java
+@Override
+public Object visit(final AST.IfThenElseExpr ifThenElseExpr, final Object arg) {
+    ifThenElseExpr.thenExpr.accept(this, arg);
+    ifThenElseExpr.elseExpr.accept(this, arg);
+
+    final MEM.Label thenLabel = new MEM.Label();
+    final MEM.Label elseLabel = new MEM.Label();
+    final MEM.Label endLabel = new MEM.Label();
+
+    final Vector<IMR.Stmt> body = stmts();
+    emitCondJump(ifThenElseExpr.condExpr, thenLabel, elseLabel, body, arg);
+    body.add(new IMR.LABEL(thenLabel));
+    body.add(new IMR.ESTMT(requireExprIR(ifThenElseExpr.thenExpr)));
+    body.add(new IMR.JUMP(new IMR.NAME(endLabel)));
+    body.add(new IMR.LABEL(elseLabel));
+    body.add(new IMR.ESTMT(requireExprIR(ifThenElseExpr.elseExpr)));
+    body.add(new IMR.LABEL(endLabel));
+
+    putExprIR(ifThenElseExpr, sexpr(body, new IMR.CONST(0)));
+    return null;
+}
+```
+
+4. Use the helper in `WhileExpr`.
+
+Change `visit(AST.WhileExpr)` so the loop condition is also emitted as control flow:
+
+```java
+@Override
+public Object visit(final AST.WhileExpr whileExpr, final Object arg) {
+    whileExpr.expr.accept(this, arg);
+
+    final MEM.Label condLabel = new MEM.Label();
+    final MEM.Label bodyLabel = new MEM.Label();
+    final MEM.Label endLabel = new MEM.Label();
+
+    final Vector<IMR.Stmt> body = stmts();
+    body.add(new IMR.LABEL(condLabel));
+    emitCondJump(whileExpr.condExpr, bodyLabel, endLabel, body, arg);
+    body.add(new IMR.LABEL(bodyLabel));
+    body.add(new IMR.ESTMT(requireExprIR(whileExpr.expr)));
+    body.add(new IMR.JUMP(new IMR.NAME(condLabel)));
+    body.add(new IMR.LABEL(endLabel));
+
+    putExprIR(whileExpr, sexpr(body, new IMR.CONST(0)));
+    return null;
+}
+```
+
+5. Leave normal binary expressions alone.
+
+Do not change:
+
+```java
+public Object visit(final AST.BinExpr binExpr, final Object arg)
+```
+
+This is what keeps the required "elsewhere use ordinary evaluation" rule. For example:
+
+```prev
+var b : bool
+b = left() or right()
+```
+
+should still be translated as the normal eager `IMR.BINOP(OR, ...)`.
+
+### Why This Is Correct
+
+The interpreter evaluates `IMR.BINOP(AND/OR)` eagerly:
+
+```java
+Long fstExpr = imrBinop.fstExpr.accept(this, null);
+Long sndExpr = imrBinop.sndExpr.accept(this, null);
+```
+
+The exercise says not to change the interpreter, so the correct move is to avoid using `IMR.BINOP(AND/OR)` for the special condition case.
+
+In generated final code, an `if` or `while` condition does not actually need a boolean value stored in a temporary. It only needs to choose between two labels. That is exactly what `IMR.CJUMP` already represents, so the short-circuit version can be expressed entirely as labels and conditional jumps.
+
+For `or`, the left operand jumps straight to the true label when it is true. The right operand is evaluated only from the left operand's false path.
+
+For `and`, the left operand jumps straight to the false label when it is false. The right operand is evaluated only from the left operand's true path.
+
+### What Not To Change
+
+Do not change `imrlin.Interpreter`.
+
+Do not change `AsmGenerator.munchBinop` to short-circuit `AND` and `OR`, because that would affect every use of these operators, including assignments, arguments, and larger expressions.
+
+Do not change `IMR.BINOP` semantics. Its documentation says that it evaluates both operands, and several phases rely on that simple expression shape.
+
+Do not remove or special-case semantic checks. `and` and `or` still require boolean operands and still produce a boolean result.
+
+Do not pre-run `condExpr.accept(this, arg)` in the `if`/`while` visitors before calling `emitCondJump`; the helper owns condition translation. Pre-running it makes it too easy to accidentally keep the old eager condition around.
+
+### Pitfalls
+
+If you only change `visit(AST.BinExpr)`, all uses of `and` and `or` will short-circuit, not only `if` and `while` conditions.
+
+If you leave the old `condExpr.accept(this, arg)` and still use `requireExprIR(condExpr)` in the `CJUMP`, the condition will remain eager.
+
+If you generate `x or y` as "evaluate x into a temp, evaluate y into a temp, then branch", the right operand is still evaluated, so the exercise is not solved.
+
+If you forget to recurse in `emitCondJump`, nested expressions such as `a and b or c` will only short-circuit at the top level.
+
+If the true and false labels are accidentally swapped in the `AND` case, `x and y` behaves like "if x is false, continue with y", which is the opposite of the required semantics.
+
+### Small Test Program
+
+Use side effects in the right operand so the test can prove whether the right side ran:
+
+```prev
+fun putint(i : int) : void
+
+var hits : int
+
+fun mark() : bool =
+    hits = hits + 1,
+    true
+
+fun main() : int =
+    hits = 0,
+
+    if true or mark() then
+        none
+    end,
+    putint(hits),
+
+    if false and mark() then
+        none
+    end,
+    putint(hits),
+
+    if false or mark() then
+        none
+    end,
+    putint(hits),
+
+    0
+```
+
+Expected output:
+
+```text
+0
+0
+1
+```
+
+Also test `while`, because it uses the same helper but has a loop back edge:
+
+```prev
+fun putint(i : int) : void
+
+var i : int
+var hits : int
+
+fun mark() : bool =
+    hits = hits + 1,
+    true
+
+fun main() : int =
+    i = 0,
+    hits = 0,
+    while i < 3 and mark() do
+        i = i + 1
+    end,
+    putint(i),
+    putint(hits),
+    while false and mark() do
+        i = i + 1
+    end,
+    putint(hits),
+    0
+```
+
+Expected output:
+
+```text
+3
+3
+3
+```
+
+Recommended command:
+
+```sh
+make -C prev26 bin
+java -cp prev26/bin:prev26/src:prev26/lib/antlr-4.13.2-complete.jar prev26lang.Compiler \
+  --logged-phase=none \
+  --target-phase=finasm \
+  --dst-file-name=/tmp/short-circuit-test.asm \
+  path/to/test.p26
+```
+
+Inspecting the generated IMR or assembly should show labels and branches between the left and right operand, instead of one eager `AND`/`OR` value calculation for the condition.
